@@ -36,17 +36,144 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>2.10.1</version>
+    </dependency>
+    <dependency>
+      <groupId>com.squareup.okhttp</groupId>
+      <artifactId>logging-interceptor</artifactId>
+      <version>2.7.5</version>
+    </dependency>
+    <dependency>
+      <groupId>com.squareup.okhttp</groupId>
+      <artifactId>okhttp</artifactId>
+      <version>2.7.5</version>
+    </dependency>
+    <dependency>
+      <groupId>io.gsonfire</groupId>
+      <artifactId>gson-fire</artifactId>
+      <version>1.9.0</version>
+    </dependency>
+    <dependency>
+      <groupId>io.swagger</groupId>
+      <artifactId>swagger-annotations</artifactId>
+      <version>1.6.14</version>
+    </dependency>
+    <dependency>
+      <groupId>org.threeten</groupId>
+      <artifactId>threetenbp</artifactId>
+      <version>1.6.9</version>
+    </dependency>
+  </dependencies>
 
   <repositories>
     <repository>
-      <id>repo.jenkins-ci.org</id>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>jenkins-ci-releases</id>
       <url>https://repo.jenkins-ci.org/public/</url>
     </repository>
   </repositories>
+
   <pluginRepositories>
     <pluginRepository>
-      <id>repo.jenkins-ci.org</id>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>jenkins-ci-plugin-releases</id>
       <url>https://repo.jenkins-ci.org/public/</url>
     </pluginRepository>
   </pluginRepositories>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.0.0</version>
+        <executions>
+          <execution>
+            <id>download-swagger-doc</id>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <phase>generate-sources</phase>
+            <configuration>
+              <executable>curl</executable>
+              <arguments>
+                <argument>-o</argument>
+                <argument>${project.build.directory}/armada.api.swagger.json</argument>
+                <argument>https://raw.githubusercontent.com/armadaproject/armada/master/pkg/api/api.swagger.json</argument>
+              </arguments>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!--      <plugin>-->
+      <!--        <groupId>org.openapitools</groupId>-->
+      <!--        <artifactId>openapi-generator-maven-plugin</artifactId>-->
+      <!--        <version>5.2.0</version>-->
+      <!--        <executions>-->
+      <!--          <execution>-->
+      <!--            <goals>-->
+      <!--              <goal>generate</goal>-->
+      <!--            </goals>-->
+      <!--            <configuration>-->
+      <!--              <inputSpec>${project.build.directory}/armada.api.swagger.json</inputSpec>-->
+      <!--              <generatorName>java</generatorName>-->
+      <!--              <output>${project.build.directory}/generated-sources/openapi</output>-->
+      <!--              <generateSupportingFiles>false</generateSupportingFiles>-->
+      <!--              <generateModelTests>false</generateModelTests>-->
+      <!--              <generateModelDocumentation>false</generateModelDocumentation>-->
+      <!--              <generateApiTests>false</generateApiTests>-->
+      <!--              &lt;!&ndash; Additional configuration options &ndash;&gt;-->
+      <!--            </configuration>-->
+      <!--          </execution>-->
+      <!--        </executions>-->
+      <!--      </plugin>-->
+
+      <plugin>
+        <groupId>io.swagger</groupId>
+        <artifactId>swagger-codegen-maven-plugin</artifactId>
+        <version>2.3.1</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <inputSpec>${project.build.directory}/armada.api.swagger.json</inputSpec>
+              <language>java</language>
+              <configOptions>
+                <generateApiTests>false</generateApiTests>
+                <generateApiDocumentation>false</generateApiDocumentation>
+                <generateModelTests>false</generateModelTests>
+                <generateModelDocumentation>false</generateModelDocumentation>
+                <generateSupportingFiles>false</generateSupportingFiles>
+              </configOptions>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>com.github.spotbugs</groupId>
+        <artifactId>spotbugs-maven-plugin</artifactId>
+        <version>4.5.2.0</version>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>
