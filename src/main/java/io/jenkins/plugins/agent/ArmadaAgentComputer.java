@@ -1,4 +1,4 @@
-package io.jenkins.plugins;
+package io.jenkins.plugins.agent;
 
 import hudson.model.Executor;
 import hudson.model.Queue;

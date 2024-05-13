@@ -1,4 +1,4 @@
-package io.jenkins.plugins;
+package io.jenkins.plugins.agent;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;

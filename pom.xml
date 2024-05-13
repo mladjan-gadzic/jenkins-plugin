@@ -67,6 +67,12 @@
       <artifactId>threetenbp</artifactId>
       <version>1.6.9</version>
     </dependency>
+
+    <dependency>
+      <groupId>commons-validator</groupId>
+      <artifactId>commons-validator</artifactId>
+      <version>1.8.0</version>
+    </dependency>
   </dependencies>
 
   <repositories>
@@ -97,56 +103,15 @@
 
   <build>
     <plugins>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <version>3.0.0</version>
-        <executions>
-          <execution>
-            <id>download-swagger-doc</id>
-            <goals>
-              <goal>exec</goal>
-            </goals>
-            <phase>generate-sources</phase>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.8.1</version>
             <configuration>
-              <executable>curl</executable>
-              <arguments>
-                <argument>-o</argument>
-                <argument>${project.build.directory}/armada.api.swagger.json</argument>
-                <argument>https://raw.githubusercontent.com/armadaproject/armada/${armada.version}/pkg/api/api.swagger.json</argument>
-              </arguments>
+              <source>21</source>
+              <target>21</target>
             </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>io.swagger</groupId>
-        <artifactId>swagger-codegen-maven-plugin</artifactId>
-        <version>2.3.1</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>generate</goal>
-            </goals>
-            <configuration>
-              <inputSpec>${project.build.directory}/armada.api.swagger.json</inputSpec>
-              <language>java</language>
-              <addCompileSourceRoot>true</addCompileSourceRoot>
-              <output>${project.build.directory}/generated-sources/swagger</output>
-              <modelPackage>io.armadaproject.armada.model</modelPackage>
-              <apiPackage>io.armadaproject.armada.api</apiPackage>
-              <configOptions>
-                <generateApiTests>false</generateApiTests>
-                <generateApiDocumentation>false</generateApiDocumentation>
-                <generateModelTests>false</generateModelTests>
-                <generateModelDocumentation>false</generateModelDocumentation>
-                <generateSupportingFiles>false</generateSupportingFiles>
-              </configOptions>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
+        </plugin>
       <plugin>
         <groupId>com.github.spotbugs</groupId>
         <artifactId>spotbugs-maven-plugin</artifactId>
