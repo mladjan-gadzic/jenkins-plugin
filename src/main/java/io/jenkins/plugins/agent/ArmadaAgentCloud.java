@@ -29,6 +29,7 @@ public class ArmadaAgentCloud extends Cloud {
     @DataBoundConstructor
     public ArmadaAgentCloud(String name, String clusterIp, String armadactlAbsPath) {
         super(name);
+        System.out.println("ArmadaAgentCloud constructor");
 
         InetAddressValidator validator = InetAddressValidator.getInstance();
 
@@ -52,11 +53,13 @@ public class ArmadaAgentCloud extends Cloud {
 
     @Override
     public Collection<NodeProvisioner.PlannedNode> provision(CloudState state, int excessWorkload) {
+        System.out.println("ArmadaAgentCloud provision");
         return super.provision(state, excessWorkload);
     }
 
     @Override
     public boolean canProvision(CloudState state) {
+        System.out.println("ArmadaAgentCloud canProvision");
         return super.canProvision(state);
     }
 
@@ -64,6 +67,7 @@ public class ArmadaAgentCloud extends Cloud {
     public static class DescriptorImpl extends Descriptor<Cloud> {
         @Override
         public String getDisplayName() {
+            System.out.println("ArmadaAgentCloud getDisplayName");
             return "Armada";
         }
     }

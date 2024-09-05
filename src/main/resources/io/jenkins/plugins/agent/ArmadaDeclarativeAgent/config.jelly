@@ -1,0 +1,6 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:st="jelly:stapler">
+  <f:entry field="yaml" title="${%Raw YAML for the Pod}">
+    <f:textarea/>
+  </f:entry>
+</j:jelly>
