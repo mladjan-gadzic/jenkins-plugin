@@ -1,0 +1,22 @@
+/*
+prerequisite Pipeline: Declarative (https://plugins.jenkins.io/pipeline-model-definition) plugin
+
+it is added in pom.xml as a dependency and will be installed automatically.
+
+to install it manually > Jenkins > Manage Jenkins > Manage Plugins > Available > search for Pipeline: Declarative > install
+restart might be required. if jenkins stops unexpectedly, start it again.
+*/
+pipeline {
+    agent {
+        armada {
+            yaml '''yaml'''
+        }
+    }
+    stages {
+        stage('Example') {
+            steps {
+                echo 'Running on Armada agent'
+            }
+        }
+    }
+}
