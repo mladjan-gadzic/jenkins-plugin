@@ -1,12 +1,12 @@
-# armada-jenkins
+# jenkins-plugin
 
 ## Introduction
 
 TODO Describe what your plugin does here
 
 ## Requirements
-- Java 17
-- Maven 3.8.6
+- Java 21
+- Maven 3.9.9
 
 ## Getting started
 

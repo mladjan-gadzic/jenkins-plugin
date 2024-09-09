@@ -4,10 +4,6 @@
       <f:textbox />
     </f:entry>
 
-    <f:entry title="${%Armada cluster ip}" field="clusterIp">
-      <f:textbox />
-    </f:entry>
-
     <f:entry title="${%Absolute path to armadactl binary}" field="armadactlAbsPath">
       <f:textbox />
     </f:entry>

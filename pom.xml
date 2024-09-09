@@ -5,15 +5,14 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>4.80</version>
+    <version>4.87</version>
     <relativePath />
   </parent>
 
-  <groupId>io.jenkins.plugins</groupId>
-  <artifactId>armada-jenkins</artifactId>
+  <groupId>armadaproject</groupId>
+  <artifactId>jenkins-plugin</artifactId>
   <version>${revision}${changelist}</version>
   <packaging>hpi</packaging>
-
   <name>Armada Jenkins plugin</name>
 
   <properties>
@@ -23,68 +22,21 @@
     <jenkins.version>2.440.2</jenkins.version>
     <spotless.check.skip>false</spotless.check.skip>
     <armada.version>v0.4.46</armada.version>
+    <jenkins.tools.bom.version>bom-2.440.x</jenkins.tools.bom.version>
+    <jenkins.tools.version>2907.vcb_35d6f2f7de</jenkins.tools.version>
   </properties>
 
   <dependencyManagement>
     <dependencies>
       <dependency>
         <groupId>io.jenkins.tools.bom</groupId>
-        <artifactId>bom-2.414.x</artifactId>
-        <version>2907.vcb_35d6f2f7de</version>
+        <artifactId>${jenkins.tools.bom.version}</artifactId>
+        <version>${jenkins.tools.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
     </dependencies>
   </dependencyManagement>
-  <dependencies>
-    <dependency>
-      <groupId>com.google.code.gson</groupId>
-      <artifactId>gson</artifactId>
-      <version>2.10.1</version>
-    </dependency>
-    <dependency>
-      <groupId>com.squareup.okhttp</groupId>
-      <artifactId>logging-interceptor</artifactId>
-      <version>2.7.5</version>
-    </dependency>
-    <dependency>
-      <groupId>com.squareup.okhttp</groupId>
-      <artifactId>okhttp</artifactId>
-      <version>2.7.5</version>
-    </dependency>
-    <dependency>
-      <groupId>io.gsonfire</groupId>
-      <artifactId>gson-fire</artifactId>
-      <version>1.9.0</version>
-    </dependency>
-    <dependency>
-      <groupId>io.swagger</groupId>
-      <artifactId>swagger-annotations</artifactId>
-      <version>1.6.14</version>
-    </dependency>
-    <dependency>
-      <groupId>org.threeten</groupId>
-      <artifactId>threetenbp</artifactId>
-      <version>1.6.9</version>
-    </dependency>
-
-    <dependency>
-      <groupId>commons-validator</groupId>
-      <artifactId>commons-validator</artifactId>
-      <version>1.8.0</version>
-    </dependency>
-
-    <dependency>
-      <!-- DeclarativeAgent -->
-      <groupId>org.jenkinsci.plugins</groupId>
-      <artifactId>pipeline-model-extensions</artifactId>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>variant</artifactId>
-    </dependency>
-  </dependencies>
 
   <repositories>
     <repository>
@@ -111,26 +63,4 @@
       <url>https://repo.jenkins-ci.org/public/</url>
     </pluginRepository>
   </pluginRepositories>
-
-  <build>
-    <plugins>
-        <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <version>3.8.1</version>
-            <configuration>
-              <source>21</source>
-              <target>21</target>
-            </configuration>
-        </plugin>
-      <plugin>
-        <groupId>com.github.spotbugs</groupId>
-        <artifactId>spotbugs-maven-plugin</artifactId>
-        <version>4.5.2.0</version>
-        <configuration>
-          <skip>true</skip>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 </project>
