@@ -36,8 +36,13 @@ public class ArmadaDeclarativeAgentScript extends DeclarativeAgentScript<ArmadaD
     @Override
     public Closure run(Closure body) {
         return {
-            script.echo 'body: ' + body
-            script.echo 'Running ArmadaDeclarativeAgentScript with yaml: ' + describable.getYaml()
+            script.echo 'Running ArmadaDeclarativeAgentScript with yaml:'
+            script.echo describable.getYaml()
+            script.node('armada') {
+                script.sh 'ls -la'
+            }
+            // run rest of the stages
+            body.call()
         }
     }
 }
