@@ -1,6 +1,8 @@
 Kubernetes plugin for Jenkins
 =========================
 
+Checkout README for [Jenkins Armada Plugin](README_armada.md).
+
 [![kubernetes version](https://img.shields.io/jenkins/plugin/v/kubernetes.svg?label=kubernetes)](https://plugins.jenkins.io/kubernetes)
 [![kubernetes installs](https://img.shields.io/jenkins/plugin/i/kubernetes.svg)](https://plugins.jenkins.io/kubernetes)
 [![kubernetes license](https://img.shields.io/github/license/jenkinsci/kubernetes-plugin)](https://github.com/jenkinsci/kubernetes-plugin/blob/master/LICENSE)
