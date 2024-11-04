@@ -27,10 +27,8 @@ package org.csanchez.jenkins.plugins.kubernetes;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.WARNING;
-import static org.csanchez.jenkins.plugins.kubernetes.PodTemplateBuilder.JENKINS_LABEL;
+import static org.csanchez.jenkins.plugins.kubernetes.PodTemplateBuilder.ARMADA_LABEL;
 
-import api.SubmitOuterClass.JobSubmitRequest;
-import api.SubmitOuterClass.JobSubmitRequestItem;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Functions;
@@ -59,11 +57,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import jenkins.metrics.api.Metrics;
-import k8s.io.api.core.v1.Generated.Container;
-import k8s.io.api.core.v1.Generated.EnvVar;
-import k8s.io.api.core.v1.Generated.PodSpec;
-import k8s.io.api.core.v1.Generated.ResourceRequirements;
-import k8s.io.apimachinery.pkg.api.resource.Generated.Quantity;
 import org.apache.commons.lang.StringUtils;
 import org.csanchez.jenkins.plugins.kubernetes.pod.decorator.PodDecoratorException;
 import org.csanchez.jenkins.plugins.kubernetes.pod.retention.Reaper;
@@ -162,7 +155,7 @@ public class KubernetesLauncher extends JNLPLauncher {
             try {
                 // getFirst() throws compilation error that it does not exist
                 // because of that get(0) is used
-                existingPod = client.pods().inNamespace(namespace).withLabel(JENKINS_LABEL, podName)
+                existingPod = client.pods().inNamespace(namespace).withLabel(ARMADA_LABEL, podName)
                     .list().getItems().get(0);
                 LOGGER.info("Pod with label 'jenkins' found");
             } catch (Exception e) {
@@ -240,7 +233,7 @@ public class KubernetesLauncher extends JNLPLauncher {
 
             client.pods()
                     .inNamespace(namespace)
-                    .withLabel(JENKINS_LABEL, podName)
+                    .withLabel(ARMADA_LABEL, podName)
                     .waitUntilReady(template.getSlaveConnectTimeout(), TimeUnit.SECONDS);
 
             LOGGER.log(INFO, () -> "Pod is running: " + cloudName + " " + namespace + "/" + podName);
@@ -266,7 +259,7 @@ public class KubernetesLauncher extends JNLPLauncher {
                 }
 
                 // Check that the pod hasn't failed already
-                pod = client.pods().inNamespace(namespace).withLabel(JENKINS_LABEL, podName).list()
+                pod = client.pods().inNamespace(namespace).withLabel(ARMADA_LABEL, podName).list()
                     .getItems().get(0);
                 if (pod == null) {
                     Metrics.metricRegistry().counter(MetricNames.LAUNCH_FAILED).inc();

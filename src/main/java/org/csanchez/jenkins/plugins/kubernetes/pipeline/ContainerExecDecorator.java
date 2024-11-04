@@ -16,7 +16,7 @@
 
 package org.csanchez.jenkins.plugins.kubernetes.pipeline;
 
-import static org.csanchez.jenkins.plugins.kubernetes.PodTemplateBuilder.JENKINS_LABEL;
+import static org.csanchez.jenkins.plugins.kubernetes.PodTemplateBuilder.ARMADA_LABEL;
 import static org.csanchez.jenkins.plugins.kubernetes.pipeline.Constants.EXIT;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -472,7 +472,7 @@ public class ContainerExecDecorator extends LauncherDecorator implements Seriali
                         Pod pod = getClient()
                             .pods()
                             .inNamespace(getNamespace())
-                            .withLabel(JENKINS_LABEL, getPodName()).list().getItems().get(0);
+                            .withLabel(ARMADA_LABEL, getPodName()).list().getItems().get(0);
 
                         ExecWatch watch = getClient()
                                 .pods()

@@ -107,7 +107,7 @@ public class PodTemplateBuilder {
     private static final String JENKINS_AGENT_FILE_ENVVAR = "JENKINS_AGENT_FILE";
     private static final String JENKINS_AGENT_AGENT_JAR = "/jenkins-agent/agent.jar";
     private static final String JENKINS_AGENT_LAUNCHER_SCRIPT_LOCATION = "/jenkins-agent/jenkins-agent";
-    public static final String JENKINS_LABEL = "jenkins";
+    public static final String ARMADA_LABEL = "kubernetes.jenkins.io/armada";
 
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "tests")
     @Restricted(NoExternalUse.class)
@@ -426,7 +426,7 @@ public class PodTemplateBuilder {
         if (cloud != null) {
             pod = PodDecorator.decorateAll(cloud, pod);
         }
-        pod.getMetadata().getLabels().put(JENKINS_LABEL, podName);
+        pod.getMetadata().getLabels().put(ARMADA_LABEL, podName);
         Pod finalPod = pod;
         LOGGER.finest(() -> "Pod built: " + Serialization.asYaml(finalPod));
         return pod;

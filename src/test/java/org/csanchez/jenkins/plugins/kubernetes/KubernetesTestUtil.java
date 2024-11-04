@@ -33,6 +33,7 @@ import static org.junit.Assume.assumeTrue;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Util;
+import hudson.model.Descriptor.FormException;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.fabric8.kubernetes.api.model.Node;
 import io.fabric8.kubernetes.api.model.PodList;
@@ -293,13 +294,13 @@ public class KubernetesTestUtil {
     }
 
     public static WorkflowRun createPipelineJobThenScheduleRun(JenkinsRule r, Class cls, String methodName)
-            throws InterruptedException, ExecutionException, IOException {
+            throws InterruptedException, ExecutionException, IOException, FormException {
         return createPipelineJobThenScheduleRun(r, cls, methodName, null);
     }
 
     public static WorkflowRun createPipelineJobThenScheduleRun(
             JenkinsRule r, Class cls, String methodName, Map<String, String> env)
-            throws IOException, ExecutionException, InterruptedException {
+            throws IOException, ExecutionException, InterruptedException, FormException {
         WorkflowJob p = r.jenkins.createProject(WorkflowJob.class, generateProjectName(methodName));
         p.setDefinition(new CpsFlowDefinition(loadPipelineDefinition(cls, methodName, env), true));
         return p.scheduleBuild2(0).waitForStart();

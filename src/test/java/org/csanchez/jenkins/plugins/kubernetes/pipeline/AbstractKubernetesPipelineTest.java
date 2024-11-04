@@ -29,6 +29,7 @@ import static org.csanchez.jenkins.plugins.kubernetes.KubernetesTestUtil.*;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
+import hudson.model.Descriptor.FormException;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
@@ -123,7 +124,7 @@ public abstract class AbstractKubernetesPipelineTest {
      * @throws InterruptedException If the thread gets interrupted while waiting for the run to start
      */
     protected final WorkflowRun createJobThenScheduleRun()
-            throws IOException, ExecutionException, InterruptedException {
+            throws IOException, ExecutionException, InterruptedException, FormException {
         return createJobThenScheduleRun(null);
     }
 
@@ -141,7 +142,7 @@ public abstract class AbstractKubernetesPipelineTest {
      * @throws InterruptedException If the thread gets interrupted while waiting for the run to start
      */
     protected final WorkflowRun createJobThenScheduleRun(Map<String, String> env)
-            throws IOException, ExecutionException, InterruptedException {
+            throws IOException, ExecutionException, InterruptedException, FormException {
         b = createPipelineJobThenScheduleRun(r, getClass(), name.getMethodName(), env);
         p = b.getParent();
         return b;

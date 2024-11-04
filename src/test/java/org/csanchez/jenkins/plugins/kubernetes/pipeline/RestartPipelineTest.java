@@ -28,6 +28,7 @@ import static java.util.Arrays.*;
 import static org.csanchez.jenkins.plugins.kubernetes.KubernetesTestUtil.*;
 import static org.junit.Assert.assertTrue;
 
+import hudson.model.Descriptor.FormException;
 import hudson.model.Node;
 import hudson.model.Result;
 import hudson.slaves.DumbSlave;
@@ -353,7 +354,7 @@ public class RestartPipelineTest {
     }
 
     private WorkflowRun getPipelineJobThenScheduleRun(JenkinsRule r)
-            throws InterruptedException, ExecutionException, IOException {
+            throws InterruptedException, ExecutionException, IOException, FormException {
         return createPipelineJobThenScheduleRun(r, getClass(), name.getMethodName());
     }
 }
