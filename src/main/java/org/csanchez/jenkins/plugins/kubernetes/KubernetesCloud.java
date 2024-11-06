@@ -120,6 +120,7 @@ public class KubernetesCloud extends Cloud implements PodTemplateGroup {
     private String armadaUrl;
     private String armadaPort;
     private String armadaQueue;
+    private String armadaBearerToken;
 
     private String serverUrl;
     private boolean useJenkinsProxy;
@@ -300,6 +301,15 @@ public class KubernetesCloud extends Cloud implements PodTemplateGroup {
     @DataBoundSetter
     public void setArmadaQueue(String armadaQueue) {
         this.armadaQueue = armadaQueue;
+    }
+
+    public String getArmadaBearerToken() {
+        return armadaBearerToken;
+    }
+
+    @DataBoundSetter
+    public void setArmadaBearerToken(String armadaBearerToken) {
+        this.armadaBearerToken = armadaBearerToken;
     }
 
     public String getServerUrl() {
@@ -936,6 +946,18 @@ public class KubernetesCloud extends Cloud implements PodTemplateGroup {
     }
 
     public ArmadaClient connectToArmada() {
+        if (StringUtils.isNotBlank(armadaBearerToken)) {
+            return secureArmadaConnection();
+        }
+
+        return unsecureArmadaConnection();
+    }
+
+    public ArmadaClient secureArmadaConnection() {
+        return new ArmadaClient(armadaUrl, Integer.parseInt(armadaPort), armadaBearerToken);
+    }
+
+    public ArmadaClient unsecureArmadaConnection() {
         return new ArmadaClient(armadaUrl, Integer.parseInt(armadaPort));
     }
 
@@ -1031,7 +1053,7 @@ public class KubernetesCloud extends Cloud implements PodTemplateGroup {
         @RequirePOST
         @SuppressWarnings("unused") // used by jelly
         public FormValidation doTestArmadaConnection(@QueryParameter String armadaUrl,
-            @QueryParameter String armadaPort) {
+            @QueryParameter String armadaPort, @QueryParameter String armadaBearerToken) {
             Jenkins.get().checkPermission(Jenkins.MANAGE);
 
             if (StringUtils.isBlank(armadaUrl)) {
@@ -1042,8 +1064,14 @@ public class KubernetesCloud extends Cloud implements PodTemplateGroup {
             }
 
             try {
-                ArmadaClient armadaClient =
-                    new ArmadaClient(armadaUrl, Integer.parseInt(armadaPort));
+                ArmadaClient armadaClient;
+                if (StringUtils.isBlank(armadaBearerToken)) {
+                    armadaClient = new ArmadaClient(armadaUrl, Integer.parseInt(armadaPort));
+                } else {
+                    armadaClient = new ArmadaClient(armadaUrl, Integer.parseInt(armadaPort),
+                        armadaBearerToken);
+                }
+
                 if (ServingStatus.SERVING == armadaClient.checkHealth()) {
                     return FormValidation.ok("Connected to Armada");
                 }
@@ -1051,7 +1079,7 @@ public class KubernetesCloud extends Cloud implements PodTemplateGroup {
                 return FormValidation.error("Connection to Armada failed %s:%s", armadaUrl,
                     armadaPort);
             } catch (Exception e) {
-                LOGGER.log(Level.FINE,
+                LOGGER.log(Level.SEVERE,
                     String.format("Error testing Armada connection %s:%s", armadaUrl, armadaPort), e);
                 return FormValidation.error("Error testing Armada connection %s:%s", armadaUrl, armadaPort);
             }

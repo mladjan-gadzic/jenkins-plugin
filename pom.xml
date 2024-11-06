@@ -52,7 +52,7 @@
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Low</spotbugs.threshold>
     <spotless.check.skip>true</spotless.check.skip>
-    <armada-grpc-java-client.version>0.0.1</armada-grpc-java-client.version>
+    <armada-grpc-java-client.version>0.0.2</armada-grpc-java-client.version>
   </properties>
 
   <dependencyManagement>
