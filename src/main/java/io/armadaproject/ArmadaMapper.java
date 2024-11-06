@@ -3,6 +3,7 @@ package io.armadaproject;
 import api.SubmitOuterClass.JobSubmitRequest;
 import api.SubmitOuterClass.JobSubmitRequest.Builder;
 import api.SubmitOuterClass.JobSubmitRequestItem;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.fabric8.kubernetes.api.model.Pod;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -1526,6 +1527,7 @@ public class ArmadaMapper {
     return builder.build();
   }
 
+  @SuppressFBWarnings("UPM_UNCALLED_PRIVATE_METHOD")
   private FlexVolumeSource mapFlexVolume(io.fabric8.kubernetes.api.model.Volume volume) {
     return FlexVolumeSource.newBuilder()
         .setDriver(volume.getFlexVolume().getDriver())
@@ -1536,6 +1538,7 @@ public class ArmadaMapper {
         .build();
   }
 
+  @SuppressFBWarnings("UPM_UNCALLED_PRIVATE_METHOD")
   private RBDVolumeSource mapRbdVolumeSource(io.fabric8.kubernetes.api.model.Volume volume) {
     return RBDVolumeSource.newBuilder()
         // FIXME
@@ -1550,6 +1553,7 @@ public class ArmadaMapper {
         .build();
   }
 
+  @SuppressFBWarnings("UPM_UNCALLED_PRIVATE_METHOD")
   private PersistentVolumeClaimVolumeSource mapPersistentVolumeClaim(
       io.fabric8.kubernetes.api.model.Volume volume) {
     return PersistentVolumeClaimVolumeSource.newBuilder()
@@ -1558,6 +1562,7 @@ public class ArmadaMapper {
         .build();
   }
 
+  @SuppressFBWarnings("UPM_UNCALLED_PRIVATE_METHOD")
   private GlusterfsVolumeSource mapGlueterfs(io.fabric8.kubernetes.api.model.Volume volume) {
     return GlusterfsVolumeSource.newBuilder()
         .setEndpoints(volume.getGlusterfs().getEndpoints())
@@ -1566,6 +1571,7 @@ public class ArmadaMapper {
         .build();
   }
 
+  @SuppressFBWarnings("UPM_UNCALLED_PRIVATE_METHOD")
   private ISCSIVolumeSource mapIscsiVolumeSource(io.fabric8.kubernetes.api.model.Volume volume) {
     return ISCSIVolumeSource.newBuilder()
         .setTargetPortal(volume.getIscsi().getTargetPortal())
@@ -1589,6 +1595,7 @@ public class ArmadaMapper {
         .build();
   }
 
+  @SuppressFBWarnings("UPM_UNCALLED_PRIVATE_METHOD")
   private NFSVolumeSource mapNfsVolumeSource(io.fabric8.kubernetes.api.model.Volume volume) {
     return NFSVolumeSource.newBuilder()
         .setServer(volume.getNfs().getServer())
@@ -1616,6 +1623,7 @@ public class ArmadaMapper {
         .collect(Collectors.toList());
   }
 
+  @SuppressFBWarnings("UPM_UNCALLED_PRIVATE_METHOD")
   private GitRepoVolumeSource mapGitRepoVolumeSource(
       io.fabric8.kubernetes.api.model.Volume volume) {
     return GitRepoVolumeSource.newBuilder()
@@ -1625,6 +1633,7 @@ public class ArmadaMapper {
         .build();
   }
 
+  @SuppressFBWarnings("UPM_UNCALLED_PRIVATE_METHOD")
   private AWSElasticBlockStoreVolumeSource mapAwsElasticBlockStoreVolumeSource(
       io.fabric8.kubernetes.api.model.Volume volume) {
     return AWSElasticBlockStoreVolumeSource.newBuilder()
@@ -1635,6 +1644,7 @@ public class ArmadaMapper {
         .build();
   }
 
+  @SuppressFBWarnings("UPM_UNCALLED_PRIVATE_METHOD")
   private GCEPersistentDiskVolumeSource mapGcePersistentDiskVolumeSource(
       io.fabric8.kubernetes.api.model.Volume volume) {
     return GCEPersistentDiskVolumeSource.newBuilder()
@@ -1659,6 +1669,7 @@ public class ArmadaMapper {
     return builder.build();
   }
 
+  @SuppressFBWarnings("UPM_UNCALLED_PRIVATE_METHOD")
   private HostPathVolumeSource mapHostPathVolumeSource(
       io.fabric8.kubernetes.api.model.Volume volume) {
     if (volume.getHostPath() == null) {

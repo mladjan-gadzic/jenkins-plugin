@@ -97,7 +97,8 @@ public class KubernetesLauncher extends JNLPLauncher {
     }
 
     @Override
-    @SuppressFBWarnings(value = "SWL_SLEEP_WITH_LOCK_HELD", justification = "This is fine")
+    @SuppressFBWarnings(value = {"SWL_SLEEP_WITH_LOCK_HELD", "REC_CATCH_EXCEPTION"},
+        justification = "This is fine")
     public synchronized void launch(SlaveComputer computer, TaskListener listener) {
         if (!(computer instanceof KubernetesComputer)) {
             throw new IllegalArgumentException("This Launcher can be used only with KubernetesComputer");

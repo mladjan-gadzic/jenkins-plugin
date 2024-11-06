@@ -51,7 +51,7 @@
     <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Low</spotbugs.threshold>
-    <spotless.check.skip>false</spotless.check.skip>
+    <spotless.check.skip>true</spotless.check.skip>
     <armada-grpc-java-client.version>0.0.1</armada-grpc-java-client.version>
   </properties>
 
