@@ -2,6 +2,7 @@ package org.csanchez.jenkins.plugins.kubernetes;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.lang.StringUtils.isEmpty;
+import static org.csanchez.jenkins.plugins.kubernetes.KubernetesFactoryAdapter.resolveCredentials;
 
 import api.Health.HealthCheckResponse.ServingStatus;
 import com.cloudbees.plugins.credentials.CredentialsMatchers;
@@ -120,7 +121,7 @@ public class KubernetesCloud extends Cloud implements PodTemplateGroup {
     private String armadaUrl;
     private String armadaPort;
     private String armadaQueue;
-    private String armadaBearerToken;
+    private String armadaCredentialsId;
 
     private String serverUrl;
     private boolean useJenkinsProxy;
@@ -303,13 +304,13 @@ public class KubernetesCloud extends Cloud implements PodTemplateGroup {
         this.armadaQueue = armadaQueue;
     }
 
-    public String getArmadaBearerToken() {
-        return armadaBearerToken;
+    public String getArmadaCredentialsId() {
+        return armadaCredentialsId;
     }
 
     @DataBoundSetter
-    public void setArmadaBearerToken(String armadaBearerToken) {
-        this.armadaBearerToken = armadaBearerToken;
+    public void setArmadaCredentialsId(String armadaCredentialsId) {
+        this.armadaCredentialsId = Util.fixEmpty(armadaCredentialsId);
     }
 
     public String getServerUrl() {
@@ -945,16 +946,24 @@ public class KubernetesCloud extends Cloud implements PodTemplateGroup {
         this.waitForPodSec = waitForPodSec;
     }
 
-    public ArmadaClient connectToArmada() {
-        if (StringUtils.isNotBlank(armadaBearerToken)) {
-            return secureArmadaConnection();
+    public ArmadaClient connectToArmada() throws KubernetesAuthException {
+        if (StringUtils.isNotBlank(armadaCredentialsId)) {
+            return secureArmadaConnection(armadaCredentialsId);
         }
 
         return unsecureArmadaConnection();
     }
 
-    public ArmadaClient secureArmadaConnection() {
-        return new ArmadaClient(armadaUrl, Integer.parseInt(armadaPort), armadaBearerToken);
+    public ArmadaClient secureArmadaConnection(String armadaCredentialsId)
+        throws KubernetesAuthException {
+        StandardCredentials standardCredentials = resolveCredentials(armadaCredentialsId);
+        if (!(standardCredentials instanceof StringCredentialsImpl)) {
+            throw new KubernetesAuthException("credentials not a secret text");
+        }
+
+        String secret = ((StringCredentialsImpl) standardCredentials).getSecret().getPlainText();
+
+        return new ArmadaClient(armadaUrl, Integer.parseInt(armadaPort), secret);
     }
 
     public ArmadaClient unsecureArmadaConnection() {
@@ -1053,7 +1062,7 @@ public class KubernetesCloud extends Cloud implements PodTemplateGroup {
         @RequirePOST
         @SuppressWarnings("unused") // used by jelly
         public FormValidation doTestArmadaConnection(@QueryParameter String armadaUrl,
-            @QueryParameter String armadaPort, @QueryParameter String armadaBearerToken) {
+            @QueryParameter String armadaPort, @QueryParameter String armadaCredentialsId) {
             Jenkins.get().checkPermission(Jenkins.MANAGE);
 
             if (StringUtils.isBlank(armadaUrl)) {
@@ -1064,12 +1073,26 @@ public class KubernetesCloud extends Cloud implements PodTemplateGroup {
             }
 
             try {
+                StandardCredentials standardCredentials = resolveCredentials(
+                    Util.fixEmpty(armadaCredentialsId));
+                if (Objects.nonNull(standardCredentials)
+                    && !(standardCredentials instanceof StringCredentialsImpl)) {
+                    String message = String.format(
+                        "Error testing Armada connection url:%s, port:%s, cause: credentials not a secret text",
+                        armadaUrl, armadaPort);
+                    LOGGER.log(Level.FINE, message);
+                    return FormValidation.error(message);
+                }
+
                 ArmadaClient armadaClient;
-                if (StringUtils.isBlank(armadaBearerToken)) {
+                if (StringUtils.isBlank(armadaCredentialsId)) {
                     armadaClient = new ArmadaClient(armadaUrl, Integer.parseInt(armadaPort));
                 } else {
+                    String secret = ((StringCredentialsImpl) standardCredentials).getSecret()
+                        .getPlainText();
+
                     armadaClient = new ArmadaClient(armadaUrl, Integer.parseInt(armadaPort),
-                        armadaBearerToken);
+                        secret);
                 }
 
                 if (ServingStatus.SERVING == armadaClient.checkHealth()) {
@@ -1079,9 +1102,12 @@ public class KubernetesCloud extends Cloud implements PodTemplateGroup {
                 return FormValidation.error("Connection to Armada failed %s:%s", armadaUrl,
                     armadaPort);
             } catch (Exception e) {
-                LOGGER.log(Level.SEVERE,
-                    String.format("Error testing Armada connection %s:%s", armadaUrl, armadaPort), e);
-                return FormValidation.error("Error testing Armada connection %s:%s", armadaUrl, armadaPort);
+                LOGGER.log(Level.FINE,
+                    String.format("Error testing Armada connection %s:%s", armadaUrl, armadaPort),
+                    e);
+                return FormValidation.error(
+                    "Error testing Armada connection url:%s, port:%s, cause:%s", armadaUrl,
+                    armadaPort, e.getCause().toString());
             }
         }
 
@@ -1136,6 +1162,22 @@ public class KubernetesCloud extends Cloud implements PodTemplateGroup {
                     StandardCredentials.class,
                     serverUrl != null ? URIRequirementBuilder.fromUri(serverUrl).build() : Collections.EMPTY_LIST,
                     CredentialsMatchers.anyOf(AuthenticationTokens.matcher(KubernetesAuth.class)));
+            return result;
+        }
+
+        @RequirePOST
+        @SuppressWarnings("unused") // used by jelly
+        public ListBoxModel doFillArmadaCredentialsIdItems(
+            @AncestorInPath ItemGroup context) {
+            Jenkins.get().checkPermission(Jenkins.MANAGE);
+            StandardListBoxModel result = new StandardListBoxModel();
+            result.includeEmptyValue();
+            result.includeMatchingAs(
+                ACL.SYSTEM,
+                context,
+                StandardCredentials.class,
+                Collections.EMPTY_LIST,
+                CredentialsMatchers.anyOf(AuthenticationTokens.matcher(KubernetesAuth.class)));
             return result;
         }
 

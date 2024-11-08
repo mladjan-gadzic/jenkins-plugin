@@ -36,11 +36,11 @@ THE SOFTWARE.
       <f:textbox default="example" clazz="required"/>
     </f:entry>
 
-  <f:entry title="${%Armada bearer token}" field="armadaBearerToken">
-    <f:textbox/>
+  <f:entry title="${%Armada credentials}" field="armadaCredentialsId">
+    <c:select/>
   </f:entry>
 
-    <f:validateButton title="${%Test Armada Connection}" progress="${%Testing...}" method="testArmadaConnection" with="armadaUrl,armadaPort,armadaBearerToken" />
+    <f:validateButton title="${%Test Armada Connection}" progress="${%Testing...}" method="testArmadaConnection" with="armadaUrl,armadaPort,armadaCredentialsId" />
 
     <f:entry title="${%Kubernetes URL}" field="serverUrl">
       <f:textbox/>

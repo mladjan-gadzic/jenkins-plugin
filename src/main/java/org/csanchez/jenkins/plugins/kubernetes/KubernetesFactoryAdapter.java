@@ -248,7 +248,7 @@ public class KubernetesFactoryAdapter {
     }
 
     @CheckForNull
-    private static StandardCredentials resolveCredentials(@CheckForNull String credentialsId)
+    public static StandardCredentials resolveCredentials(@CheckForNull String credentialsId)
             throws KubernetesAuthException {
         if (credentialsId == null) {
             return null;
