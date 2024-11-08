@@ -74,6 +74,7 @@ import org.csanchez.jenkins.plugins.kubernetes.pod.retention.Default;
 import org.csanchez.jenkins.plugins.kubernetes.pod.retention.PodRetention;
 import org.jenkinsci.plugins.kubernetes.auth.KubernetesAuth;
 import org.jenkinsci.plugins.kubernetes.auth.KubernetesAuthException;
+import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 import org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -957,11 +958,11 @@ public class KubernetesCloud extends Cloud implements PodTemplateGroup {
     public ArmadaClient secureArmadaConnection(String armadaCredentialsId)
         throws KubernetesAuthException {
         StandardCredentials standardCredentials = resolveCredentials(armadaCredentialsId);
-        if (!(standardCredentials instanceof StringCredentialsImpl)) {
-            throw new KubernetesAuthException("credentials not a secret text");
+        if (!(standardCredentials instanceof StringCredentials)) {
+            throw new KubernetesAuthException("credentials not a string credentials");
         }
 
-        String secret = ((StringCredentialsImpl) standardCredentials).getSecret().getPlainText();
+        String secret = ((StringCredentials) standardCredentials).getSecret().getPlainText();
 
         return new ArmadaClient(armadaUrl, Integer.parseInt(armadaPort), secret);
     }
@@ -1061,6 +1062,7 @@ public class KubernetesCloud extends Cloud implements PodTemplateGroup {
 
         @RequirePOST
         @SuppressWarnings("unused") // used by jelly
+        @SuppressFBWarnings("REC_CATCH_EXCEPTION")
         public FormValidation doTestArmadaConnection(@QueryParameter String armadaUrl,
             @QueryParameter String armadaPort, @QueryParameter String armadaCredentialsId) {
             Jenkins.get().checkPermission(Jenkins.MANAGE);
@@ -1073,23 +1075,30 @@ public class KubernetesCloud extends Cloud implements PodTemplateGroup {
             }
 
             try {
-                StandardCredentials standardCredentials = resolveCredentials(
-                    Util.fixEmpty(armadaCredentialsId));
-                if (Objects.nonNull(standardCredentials)
-                    && !(standardCredentials instanceof StringCredentialsImpl)) {
-                    String message = String.format(
-                        "Error testing Armada connection url:%s, port:%s, cause: credentials not a secret text",
-                        armadaUrl, armadaPort);
-                    LOGGER.log(Level.FINE, message);
-                    return FormValidation.error(message);
-                }
-
                 ArmadaClient armadaClient;
                 if (StringUtils.isBlank(armadaCredentialsId)) {
                     armadaClient = new ArmadaClient(armadaUrl, Integer.parseInt(armadaPort));
                 } else {
-                    String secret = ((StringCredentialsImpl) standardCredentials).getSecret()
-                        .getPlainText();
+                    StandardCredentials standardCredentials = resolveCredentials(
+                        Util.fixEmpty(armadaCredentialsId));
+                    if (Objects.nonNull(standardCredentials)
+                        && !(standardCredentials instanceof StringCredentials)) {
+                        String message = String.format(
+                            "Error testing Armada connection url:%s, port:%s, cause: credentials not a string credentials",
+                            armadaUrl, armadaPort);
+                        LOGGER.log(Level.FINE, message);
+                        return FormValidation.error(message);
+                    }
+
+                    StringCredentials stringCredentials = (StringCredentials) standardCredentials;
+                    if (Objects.isNull(stringCredentials)) {
+                        String message = String.format(
+                            "Error testing Armada connection url:%s, port:%s, cause: string credentials null",
+                            armadaUrl, armadaPort);
+                        LOGGER.log(Level.FINE, message);
+                        return FormValidation.error(message);
+                    }
+                    String secret = stringCredentials.getSecret().getPlainText();
 
                     armadaClient = new ArmadaClient(armadaUrl, Integer.parseInt(armadaPort),
                         secret);
