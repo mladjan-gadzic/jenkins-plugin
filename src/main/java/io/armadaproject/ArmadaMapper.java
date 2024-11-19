@@ -4,9 +4,9 @@ import api.SubmitOuterClass.JobSubmitRequest;
 import api.SubmitOuterClass.JobSubmitRequest.Builder;
 import api.SubmitOuterClass.JobSubmitRequestItem;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.Pod;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -88,12 +88,14 @@ import k8s.io.apimachinery.pkg.util.intstr.Generated.IntOrString;
 
 public class ArmadaMapper {
 
-  private final String queue;
-  private final String jobSetId;
-  private final Pod pod;
+  public final String queue;
+  public final String namespace;
+  public final String jobSetId;
+  public final Pod pod;
 
-  public ArmadaMapper(String queue, String jobSetId, Pod pod) {
+  public ArmadaMapper(String queue, String namespace, String jobSetId, Pod pod) {
     this.queue = queue;
+    this.namespace = namespace;
     this.jobSetId = jobSetId;
     this.pod = pod;
   }
@@ -103,14 +105,13 @@ public class ArmadaMapper {
 
     builder
         .setQueue(queue)
-        .setJobSetId(jobSetId);
-
-    builder.addJobRequestItems(createJobRequestItems(pod));
+        .setJobSetId(jobSetId)
+        .addJobRequestItems(createJobRequestItems(pod));
 
     return builder.build();
   }
 
-  private JobSubmitRequestItem createJobRequestItems(Pod pod) {
+  public JobSubmitRequestItem createJobRequestItems(Pod pod) {
     // priority skipped
     // client_id skipped
     // required_node_labels deprecated
@@ -119,29 +120,27 @@ public class ArmadaMapper {
     // services skipped
     // scheduler skipped
     JobSubmitRequestItem.Builder builder = JobSubmitRequestItem.newBuilder();
+    ObjectMeta metadata = pod.getMetadata();
 
-    if (Objects.nonNull(pod.getMetadata()) && Objects.nonNull(pod.getMetadata().getNamespace())) {
-      builder.setNamespace(pod.getMetadata().getNamespace());
-    } else {
-      builder.setNamespace("default");
+    builder.setNamespace(Objects.nonNull(namespace) ? namespace : "default");
+
+    if (metadata != null) {
+      if (!metadata.getLabels().isEmpty()) {
+        builder.putAllLabels(metadata.getLabels());
+      }
+      if (!metadata.getAnnotations().isEmpty()) {
+        builder.putAllAnnotations(metadata.getAnnotations());
+      }
     }
 
-    if (Objects.nonNull(pod.getMetadata()) && !pod.getMetadata().getLabels().isEmpty()) {
-      builder.putAllLabels(pod.getMetadata().getLabels());
-    }
-
-    if (Objects.nonNull(pod.getMetadata()) && !pod.getMetadata().getAnnotations().isEmpty()) {
-      builder.putAllAnnotations(pod.getMetadata().getAnnotations());
-    }
-
-    if (Objects.nonNull(pod.getSpec())) {
+    if (pod.getSpec() != null) {
       builder.addPodSpecs(mapPodSpec(pod));
     }
 
     return builder.build();
   }
 
-  private PodSpec mapPodSpec(Pod pod) {
+  public PodSpec mapPodSpec(Pod pod) {
     // initContainers skipped
     PodSpec.Builder builder = PodSpec.newBuilder();
 
@@ -151,494 +150,729 @@ public class ArmadaMapper {
 
     io.fabric8.kubernetes.api.model.PodSpec podSpec = pod.getSpec();
 
-    List<io.fabric8.kubernetes.api.model.Volume> volumes = podSpec.getVolumes();
-    if (Objects.nonNull(volumes) && !volumes.isEmpty()) {
-      builder.addAllVolumes(mapVolumes(volumes));
+    if (Objects.nonNull(podSpec.getVolumes())) {
+      builder.addAllVolumes(mapVolumes(podSpec.getVolumes()));
     }
 
-    List<io.fabric8.kubernetes.api.model.Container> containers = podSpec.getContainers();
-    if (Objects.nonNull(containers) && !containers.isEmpty()) {
-      builder.addAllContainers(mapContainers(containers));
+    if (Objects.nonNull(podSpec.getContainers())) {
+      builder.addAllContainers(mapContainers(podSpec.getContainers()));
     }
 
-    List<io.fabric8.kubernetes.api.model.EphemeralContainer> ephemeralContainers =
-        podSpec.getEphemeralContainers();
-    if (Objects.nonNull(ephemeralContainers) && !ephemeralContainers.isEmpty()) {
-      builder.addAllEphemeralContainers(mapEphermalContainers(ephemeralContainers));
+    // NOT USED
+//    if (Objects.nonNull(podSpec.getEphemeralContainers())) {
+//      builder.addAllEphemeralContainers(mapEphermalContainers(podSpec.getEphemeralContainers()));
+//    }
+
+    if (Objects.nonNull(podSpec.getRestartPolicy())) {
+      builder.setRestartPolicy(podSpec.getRestartPolicy());
     }
 
-    String restartPolicy = podSpec.getRestartPolicy();
-    if (Objects.nonNull(restartPolicy)) {
-      builder.setRestartPolicy(restartPolicy);
+    if (Objects.nonNull(podSpec.getTerminationGracePeriodSeconds())) {
+      builder.setTerminationGracePeriodSeconds(podSpec.getTerminationGracePeriodSeconds());
     }
 
-    Long terminationGracePeriodSeconds = podSpec.getTerminationGracePeriodSeconds();
-    if (Objects.nonNull(terminationGracePeriodSeconds)) {
-      builder.setTerminationGracePeriodSeconds(terminationGracePeriodSeconds);
+    if (Objects.nonNull(podSpec.getActiveDeadlineSeconds())) {
+      builder.setActiveDeadlineSeconds(podSpec.getActiveDeadlineSeconds());
     }
 
-    Long activeDeadlineSeconds = podSpec.getActiveDeadlineSeconds();
-    if (Objects.nonNull(activeDeadlineSeconds)) {
-      builder.setActiveDeadlineSeconds(activeDeadlineSeconds);
+    if (Objects.nonNull(podSpec.getDnsPolicy())) {
+      builder.setDnsPolicy(podSpec.getDnsPolicy());
     }
 
-    String dnsPolicy = podSpec.getDnsPolicy();
-    if (Objects.nonNull(dnsPolicy)) {
-      builder.setDnsPolicy(dnsPolicy);
+    if (Objects.nonNull(podSpec.getNodeSelector())) {
+      builder.putAllNodeSelector(podSpec.getNodeSelector());
     }
 
-    Map<String, String> nodeSelector = podSpec.getNodeSelector();
-    if (Objects.nonNull(nodeSelector) && !nodeSelector.isEmpty()) {
-      builder.putAllNodeSelector(nodeSelector);
+    if (Objects.nonNull(podSpec.getServiceAccount())) {
+      builder.setServiceAccount(podSpec.getServiceAccount());
     }
 
-    String serviceAccount = podSpec.getServiceAccount();
-    if (Objects.nonNull(serviceAccount)) {
-      builder.setServiceAccount(serviceAccount);
+    if (Objects.nonNull(podSpec.getAutomountServiceAccountToken())) {
+      builder.setAutomountServiceAccountToken(podSpec.getAutomountServiceAccountToken());
     }
 
-    Boolean automountServiceAccountToken = podSpec.getAutomountServiceAccountToken();
-    if (Objects.nonNull(automountServiceAccountToken)) {
-      builder.setAutomountServiceAccountToken(automountServiceAccountToken);
+    if (Objects.nonNull(podSpec.getNodeName())) {
+      builder.setNodeName(podSpec.getNodeName());
     }
 
-    String nodeName = podSpec.getNodeName();
-    if (Objects.nonNull(nodeName)) {
-      builder.setNodeName(nodeName);
+    if (Objects.nonNull(podSpec.getHostNetwork())) {
+      builder.setHostNetwork(podSpec.getHostNetwork());
     }
 
-    Boolean hostNetwork = podSpec.getHostNetwork();
-    if (Objects.nonNull(hostNetwork)) {
-      builder.setHostNetwork(hostNetwork);
+    if (Objects.nonNull(podSpec.getHostPID())) {
+      builder.setHostPID(podSpec.getHostPID());
     }
 
-    Boolean hostPID = podSpec.getHostPID();
-    if (Objects.nonNull(hostPID)) {
-      builder.setHostPID(hostPID);
+    if (Objects.nonNull(podSpec.getHostIPC())) {
+      builder.setHostIPC(podSpec.getHostIPC());
     }
 
-    Boolean hostIPC = podSpec.getHostIPC();
-    if (Objects.nonNull(hostIPC)) {
-      builder.setHostIPC(hostIPC);
+    if (Objects.nonNull(podSpec.getShareProcessNamespace())) {
+      builder.setShareProcessNamespace(podSpec.getShareProcessNamespace());
     }
 
-    Boolean shareProcessNamespace = podSpec.getShareProcessNamespace();
-    if (Objects.nonNull(shareProcessNamespace)) {
-      builder.setShareProcessNamespace(shareProcessNamespace);
+    if (Objects.nonNull(podSpec.getSecurityContext())) {
+      builder.setSecurityContext(mapPodSecurityContext(podSpec.getSecurityContext()));
     }
 
-    io.fabric8.kubernetes.api.model.PodSecurityContext securityContext =
-        podSpec.getSecurityContext();
-    if (Objects.nonNull(securityContext)) {
-      builder.setSecurityContext(mapPodSecurityContext(securityContext));
+    if (Objects.nonNull(podSpec.getImagePullSecrets())) {
+      builder.addAllImagePullSecrets(mapLocalObjectReference(podSpec.getImagePullSecrets()));
     }
 
-    List<io.fabric8.kubernetes.api.model.LocalObjectReference> imagePullSecrets =
-        podSpec.getImagePullSecrets();
-    if (Objects.nonNull(imagePullSecrets) && !imagePullSecrets.isEmpty()) {
-      builder.addAllImagePullSecrets(mapLocalObjectReference(imagePullSecrets));
+    if (Objects.nonNull(podSpec.getHostname())) {
+      builder.setHostname(podSpec.getHostname());
     }
 
-    String hostname = podSpec.getHostname();
-    if (Objects.nonNull(hostname)) {
-      builder.setHostname(hostname);
+    if (Objects.nonNull(podSpec.getSubdomain())) {
+      builder.setSubdomain(podSpec.getSubdomain());
     }
 
-    String subdomain = podSpec.getSubdomain();
-    if (Objects.nonNull(subdomain)) {
-      builder.setSubdomain(subdomain);
+    if (Objects.nonNull(podSpec.getAffinity())) {
+      builder.setAffinity(mapAffinity(podSpec.getAffinity()));
     }
 
-    io.fabric8.kubernetes.api.model.Affinity affinity = podSpec.getAffinity();
-    if (Objects.nonNull(affinity)) {
-      builder.setAffinity(mapAffinity(affinity));
+    if (Objects.nonNull(podSpec.getSchedulerName())) {
+      builder.setSchedulerName(podSpec.getSchedulerName());
     }
 
-    String schedulerName = podSpec.getSchedulerName();
-    if (Objects.nonNull(schedulerName)) {
-      builder.setSchedulerName(schedulerName);
+    if (Objects.nonNull(podSpec.getTolerations())) {
+      builder.addAllTolerations(mapTolerations(podSpec.getTolerations()));
     }
 
-    List<io.fabric8.kubernetes.api.model.Toleration> tolerations = podSpec.getTolerations();
-    if (Objects.nonNull(tolerations) && !tolerations.isEmpty()) {
-      builder.addAllTolerations(mapTolerations(tolerations));
+    if (Objects.nonNull(podSpec.getHostAliases())) {
+      builder.addAllHostAliases(mapHostAliases(podSpec.getHostAliases()));
     }
 
-    List<io.fabric8.kubernetes.api.model.HostAlias> hostAliases = podSpec.getHostAliases();
-    if (Objects.nonNull(hostAliases) && !hostAliases.isEmpty()) {
-      builder.addAllHostAliases(mapHostAliases(hostAliases));
+    if (Objects.nonNull(podSpec.getPriorityClassName())) {
+      builder.setPriorityClassName(podSpec.getPriorityClassName());
     }
 
-    String priorityClassName = podSpec.getPriorityClassName();
-    if (Objects.nonNull(priorityClassName)) {
-      builder.setPriorityClassName(priorityClassName);
+    if (Objects.nonNull(podSpec.getPriority())) {
+      builder.setPriority(podSpec.getPriority());
     }
 
-    Integer priority = podSpec.getPriority();
-    if (Objects.nonNull(priority)) {
-      builder.setPriority(priority);
+    if (Objects.nonNull(podSpec.getDnsConfig())) {
+      builder.setDnsConfig(mapPodDnsConfig(podSpec.getDnsConfig()));
     }
 
-    io.fabric8.kubernetes.api.model.PodDNSConfig dnsConfig = podSpec.getDnsConfig();
-    if (Objects.nonNull(dnsConfig)) {
-      builder.setDnsConfig(mapPodDnsConfig(dnsConfig));
+    if (Objects.nonNull(podSpec.getReadinessGates())) {
+      builder.addAllReadinessGates(mapPodReadinessGate(podSpec.getReadinessGates()));
     }
 
-    List<io.fabric8.kubernetes.api.model.PodReadinessGate> readinessGates =
-        podSpec.getReadinessGates();
-    if (Objects.nonNull(readinessGates) && !readinessGates.isEmpty()) {
-      builder.addAllReadinessGates(mapPodReadinessGate(readinessGates));
+    if (Objects.nonNull(podSpec.getRuntimeClassName())) {
+      builder.setRuntimeClassName(podSpec.getRuntimeClassName());
     }
 
-    String runtimeClassName = podSpec.getRuntimeClassName();
-    if (Objects.nonNull(runtimeClassName)) {
-      builder.setRuntimeClassName(runtimeClassName);
+    if (Objects.nonNull(podSpec.getEnableServiceLinks())) {
+      builder.setEnableServiceLinks(podSpec.getEnableServiceLinks());
     }
 
-    Boolean enableServiceLinks = podSpec.getEnableServiceLinks();
-    if (Objects.nonNull(enableServiceLinks)) {
-      builder.setEnableServiceLinks(enableServiceLinks);
+    if (Objects.nonNull(podSpec.getPreemptionPolicy())) {
+      builder.setPreemptionPolicy(podSpec.getPreemptionPolicy());
     }
 
-    String preemptionPolicy = podSpec.getPreemptionPolicy();
-    if (Objects.nonNull(preemptionPolicy)) {
-      builder.setPreemptionPolicy(preemptionPolicy);
+    if (Objects.nonNull(podSpec.getOverhead())) {
+      builder.putAllOverhead(mapOvearhead(podSpec.getOverhead()));
     }
 
-    Map<String, io.fabric8.kubernetes.api.model.Quantity> overhead = podSpec.getOverhead();
-    if (Objects.nonNull(overhead) && !overhead.isEmpty()) {
-      builder.putAllOverhead(mapOvearhead(overhead));
+    if (Objects.nonNull(podSpec.getTopologySpreadConstraints())) {
+      builder.addAllTopologySpreadConstraints(mapTopologySpreadConstraints(
+              podSpec.getTopologySpreadConstraints()));
     }
 
-    List<io.fabric8.kubernetes.api.model.TopologySpreadConstraint> topologySpreadConstraints =
-        podSpec.getTopologySpreadConstraints();
-    if (Objects.nonNull(topologySpreadConstraints) && !topologySpreadConstraints.isEmpty()) {
-      builder
-          .addAllTopologySpreadConstraints(mapTopologySpreadConstraints(topologySpreadConstraints));
+    if (Objects.nonNull(podSpec.getSetHostnameAsFQDN())) {
+      builder.setSetHostnameAsFQDN(podSpec.getSetHostnameAsFQDN());
     }
 
-    Boolean setHostnameAsFQDN = podSpec.getSetHostnameAsFQDN();
-    if (Objects.nonNull(setHostnameAsFQDN)) {
-      builder.setSetHostnameAsFQDN(setHostnameAsFQDN);
+    if (Objects.nonNull(podSpec.getOs())) {
+      builder.setOs(mapPodOs(podSpec.getOs()));
     }
 
-    io.fabric8.kubernetes.api.model.PodOS os = podSpec.getOs();
-    if (Objects.nonNull(os)) {
-      builder.setOs(mapPodOs(os));
+    if (Objects.nonNull(podSpec.getHostUsers())) {
+      builder.setHostUsers(podSpec.getHostUsers());
     }
 
-    Boolean hostUsers = podSpec.getHostUsers();
-    if (Objects.nonNull(hostUsers)) {
-      builder.setHostUsers(hostUsers);
+    if (Objects.nonNull(podSpec.getSchedulingGates())) {
+      builder.addAllSchedulingGates(mapPodSchedulingGates(podSpec.getSchedulingGates()));
     }
 
-    List<io.fabric8.kubernetes.api.model.PodSchedulingGate> schedulingGates =
-        podSpec.getSchedulingGates();
-    if (Objects.nonNull(schedulingGates) && !schedulingGates.isEmpty()) {
-      builder.addAllSchedulingGates(mapPodSchedulingGates(schedulingGates));
-    }
-
-    List<io.fabric8.kubernetes.api.model.PodResourceClaim> resourceClaims =
-        podSpec.getResourceClaims();
-    if (Objects.nonNull(resourceClaims) && !resourceClaims.isEmpty()) {
-      builder.addAllResourceClaims(mapPodResourceClaims(resourceClaims));
+    if (Objects.nonNull(podSpec.getResourceClaims())) {
+      builder.addAllResourceClaims(mapPodResourceClaims(podSpec.getResourceClaims()));
     }
 
     return builder.build();
   }
 
-  private Iterable<? extends PodResourceClaim> mapPodResourceClaims(
+  public Iterable<? extends PodResourceClaim> mapPodResourceClaims(
       List<io.fabric8.kubernetes.api.model.PodResourceClaim> resourceClaims) {
-    // TODO fix NPEs
     return resourceClaims.stream()
-        .map(r -> PodResourceClaim.newBuilder()
-            .setName(r.getName())
-            // FIXME possible mismatch
-            .setResourceClaimName(r.getName())
-            // FIXME possible mismatch
-            .setResourceClaimTemplateName(r.getName())
-            .build())
+        .map(r -> {
+          PodResourceClaim.Builder builder = PodResourceClaim.newBuilder();
+
+          if (Objects.nonNull(r.getName())) {
+            builder.setName(r.getName());
+          }
+
+          // FIXME possible mismatch
+          if (Objects.nonNull(r.getName())) {
+            builder.setResourceClaimTemplateName(r.getName());
+          }
+
+          return builder.build();
+        })
         .collect(Collectors.toList());
   }
 
-  private Iterable<? extends PodSchedulingGate> mapPodSchedulingGates(
+  public Iterable<? extends PodSchedulingGate> mapPodSchedulingGates(
       List<io.fabric8.kubernetes.api.model.PodSchedulingGate> schedulingGates) {
-    // TODO fix NPEs
     return schedulingGates.stream()
-        .map(g -> PodSchedulingGate.newBuilder()
-            .setName(g.getName())
-            .build())
+        .map(g -> {
+          PodSchedulingGate.Builder builder = PodSchedulingGate.newBuilder();
+
+          if (Objects.nonNull(g.getName())) {
+            builder.setName(g.getName());
+          }
+
+          return builder.build();
+        })
         .collect(Collectors.toList());
   }
 
-  private PodOS mapPodOs(io.fabric8.kubernetes.api.model.PodOS os) {
-    return PodOS.newBuilder()
-        .setName(os.getName())
-        .build();
+  public PodOS mapPodOs(io.fabric8.kubernetes.api.model.PodOS os) {
+    PodOS.Builder builder = PodOS.newBuilder();
+
+    if (Objects.nonNull(os.getName())) {
+      builder.setName(os.getName());
+    }
+
+    return builder.build();
   }
 
-  private Iterable<? extends TopologySpreadConstraint> mapTopologySpreadConstraints(
+  public Iterable<? extends TopologySpreadConstraint> mapTopologySpreadConstraints(
       List<io.fabric8.kubernetes.api.model.TopologySpreadConstraint> topologySpreadConstraints) {
-    // TODO fix NPEs
     return topologySpreadConstraints.stream()
-        .map(c -> TopologySpreadConstraint.newBuilder()
-            .setMaxSkew(c.getMaxSkew())
-            .setTopologyKey(c.getTopologyKey())
-            .setWhenUnsatisfiable(c.getWhenUnsatisfiable())
-            .setLabelSelector(mapLabelSelector(c.getLabelSelector()))
-            .setMinDomains(c.getMinDomains())
-            .setNodeAffinityPolicy(c.getNodeAffinityPolicy())
-            .setNodeTaintsPolicy(c.getNodeTaintsPolicy())
-            .addAllMatchLabelKeys(c.getMatchLabelKeys())
-            .build())
+        .map(c -> {
+          TopologySpreadConstraint.Builder builder = TopologySpreadConstraint.newBuilder();
+
+          if (Objects.nonNull(c.getMaxSkew())) {
+            builder.setMaxSkew(c.getMaxSkew());
+          }
+
+          if (Objects.nonNull(c.getTopologyKey())) {
+            builder.setTopologyKey(c.getTopologyKey());
+          }
+
+          if (Objects.nonNull(c.getWhenUnsatisfiable())) {
+            builder.setWhenUnsatisfiable(c.getWhenUnsatisfiable());
+          }
+
+          if (Objects.nonNull(c.getLabelSelector())) {
+            builder.setLabelSelector(mapLabelSelector(c.getLabelSelector()));
+          }
+
+          if (Objects.nonNull(c.getMinDomains())) {
+            builder.setMinDomains(c.getMinDomains());
+          }
+
+          if (Objects.nonNull(c.getNodeAffinityPolicy())) {
+            builder.setNodeAffinityPolicy(c.getNodeAffinityPolicy());
+          }
+
+          if (Objects.nonNull(c.getNodeTaintsPolicy())) {
+            builder.setNodeTaintsPolicy(c.getNodeTaintsPolicy());
+          }
+
+          if (Objects.nonNull(c.getMatchLabelKeys())) {
+            builder.addAllMatchLabelKeys(c.getMatchLabelKeys());
+          }
+
+          return builder.build();
+        })
         .collect(Collectors.toList());
   }
 
-  private Map<String, Quantity> mapOvearhead(
+  public Map<String, Quantity> mapOvearhead(
       Map<String, io.fabric8.kubernetes.api.model.Quantity> overhead) {
-    // TODO fix NPEs
     return overhead.entrySet().stream()
         .collect(Collectors.toMap(Map.Entry::getKey,
-            e -> Quantity.newBuilder().setString(e.getValue().getAmount()).build()));
+            e -> {
+              if (Objects.nonNull(e.getValue())) {
+                return mapQuantity(e.getValue());
+              }
+
+              return Quantity.newBuilder().build();
+            }));
   }
 
-  private Iterable<? extends PodReadinessGate> mapPodReadinessGate(
+  public Iterable<? extends PodReadinessGate> mapPodReadinessGate(
       List<io.fabric8.kubernetes.api.model.PodReadinessGate> readinessGates) {
-    // TODO fix NPEs
     return readinessGates.stream()
-        .map(g -> PodReadinessGate.newBuilder()
-            .setConditionType(g.getConditionType())
-            .build())
+        .map(g -> {
+          PodReadinessGate.Builder builder = PodReadinessGate.newBuilder();
+
+          if (Objects.nonNull(g.getConditionType())) {
+            builder.setConditionType(g.getConditionType());
+          }
+
+          return builder.build();
+        })
         .collect(Collectors.toList());
   }
 
-  private PodDNSConfig mapPodDnsConfig(io.fabric8.kubernetes.api.model.PodDNSConfig dnsConfig) {
-    // TODO fix NPEs
-    return PodDNSConfig.newBuilder()
-        .addAllNameservers(dnsConfig.getNameservers())
-        .addAllSearches(dnsConfig.getSearches())
-        .addAllOptions(mapPodDNSConfigOption(dnsConfig.getOptions()))
-        .build();
+  public PodDNSConfig mapPodDnsConfig(io.fabric8.kubernetes.api.model.PodDNSConfig dnsConfig) {
+    PodDNSConfig.Builder builder = PodDNSConfig.newBuilder();
+
+    if (Objects.nonNull(dnsConfig.getNameservers())) {
+      builder.addAllNameservers(dnsConfig.getNameservers());
+    }
+
+    if (Objects.nonNull(dnsConfig.getSearches())) {
+      builder.addAllSearches(dnsConfig.getSearches());
+    }
+
+    if (Objects.nonNull(dnsConfig.getOptions())) {
+      builder.addAllOptions(mapPodDNSConfigOption(dnsConfig.getOptions()));
+    }
+
+    return builder.build();
   }
 
-  private Iterable<? extends PodDNSConfigOption> mapPodDNSConfigOption(
+  public Iterable<? extends PodDNSConfigOption> mapPodDNSConfigOption(
       List<io.fabric8.kubernetes.api.model.PodDNSConfigOption> options) {
     return options.stream()
-        .map(o -> PodDNSConfigOption.newBuilder()
-            .setName(o.getName())
-            .setValue(o.getValue())
-            .build())
+        .map(o -> {
+          PodDNSConfigOption.Builder builder = PodDNSConfigOption.newBuilder();
+
+          if (Objects.nonNull(o.getName())) {
+            builder.setName(o.getName());
+          }
+
+          if (Objects.nonNull(o.getValue())) {
+            builder.setValue(o.getValue());
+          }
+
+          return builder.build();
+        })
         .collect(Collectors.toList());
   }
 
-  private Iterable<? extends HostAlias> mapHostAliases(
+  public Iterable<? extends HostAlias> mapHostAliases(
       List<io.fabric8.kubernetes.api.model.HostAlias> hostAliases) {
-    // TODO fix NPEs
     return hostAliases.stream()
-        .map(h -> HostAlias.newBuilder()
-            .setIp(h.getIp())
-            .addAllHostnames(h.getHostnames())
-            .build())
+        .map(h -> {
+          HostAlias.Builder builder = HostAlias.newBuilder();
+
+          if (Objects.nonNull(h.getIp())) {
+            builder.setIp(h.getIp());
+          }
+
+          if (Objects.nonNull(h.getHostnames())) {
+            builder.addAllHostnames(h.getHostnames());
+          }
+
+          return builder.build();
+        })
         .collect(Collectors.toList());
   }
 
-  private Iterable<? extends Toleration> mapTolerations(
+  public Iterable<? extends Toleration> mapTolerations(
       List<io.fabric8.kubernetes.api.model.Toleration> tolerations) {
-    // TODO fix NPEs
     return tolerations.stream()
-        .map(t -> Toleration.newBuilder()
-            .setKey(t.getKey())
-            .setOperator(t.getOperator())
-            .setValue(t.getValue())
-            .setEffect(t.getEffect())
-            .setTolerationSeconds(t.getTolerationSeconds())
-            .build())
+        .map(t -> {
+          Toleration.Builder builder = Toleration.newBuilder();
+          if (Objects.nonNull(t.getKey())) {
+            builder.setKey(t.getKey());
+          }
+
+          if (Objects.nonNull(t.getOperator())) {
+            builder.setOperator(t.getOperator());
+          }
+
+          if (Objects.nonNull(t.getValue())) {
+            builder.setValue(t.getValue());
+          }
+
+          if (Objects.nonNull(t.getEffect())) {
+            builder.setEffect(t.getEffect());
+          }
+
+          if (Objects.nonNull(t.getTolerationSeconds())) {
+            builder.setTolerationSeconds(t.getTolerationSeconds());
+          }
+
+          return builder.build();
+        })
         .collect(Collectors.toList());
   }
 
-  private Affinity mapAffinity(io.fabric8.kubernetes.api.model.Affinity affinity) {
-    // TODO fix NPEs
-    return Affinity.newBuilder()
-        .setNodeAffinity(mapNodeAffinity(affinity.getNodeAffinity()))
-        .setPodAffinity(mapPodAffinity(affinity.getPodAffinity()))
-        .setPodAntiAffinity(mapPodAntiAffinity(affinity.getPodAntiAffinity()))
-        .build();
+  public Affinity mapAffinity(io.fabric8.kubernetes.api.model.Affinity affinity) {
+    Affinity.Builder builder = Affinity.newBuilder();
+
+    if (Objects.nonNull(affinity.getNodeAffinity())) {
+      builder.setNodeAffinity(mapNodeAffinity(affinity.getNodeAffinity()));
+    }
+
+    if (Objects.nonNull(affinity.getPodAffinity())) {
+      builder.setPodAffinity(mapPodAffinity(affinity.getPodAffinity()));
+    }
+
+    if (Objects.nonNull(affinity.getPodAntiAffinity())) {
+      builder.setPodAntiAffinity(mapPodAntiAffinity(affinity.getPodAntiAffinity()));
+    }
+
+    return builder.build();
   }
 
-  private PodAntiAffinity mapPodAntiAffinity(
+  public PodAntiAffinity mapPodAntiAffinity(
       io.fabric8.kubernetes.api.model.PodAntiAffinity podAntiAffinity) {
-    return PodAntiAffinity.newBuilder()
-        .addAllRequiredDuringSchedulingIgnoredDuringExecution(
-            mapPodAffinityTerm(podAntiAffinity.getRequiredDuringSchedulingIgnoredDuringExecution()))
-        .addAllPreferredDuringSchedulingIgnoredDuringExecution(
-            mapWeightedPodAffinityTerm(
-                podAntiAffinity.getPreferredDuringSchedulingIgnoredDuringExecution()))
+    PodAntiAffinity.Builder builder = PodAntiAffinity.newBuilder();
+
+    if (Objects.nonNull(podAntiAffinity.getRequiredDuringSchedulingIgnoredDuringExecution())) {
+      builder.addAllRequiredDuringSchedulingIgnoredDuringExecution(
+          mapPodAffinityTerm(podAntiAffinity.getRequiredDuringSchedulingIgnoredDuringExecution()));
+    }
+
+    if (Objects.nonNull(podAntiAffinity.getPreferredDuringSchedulingIgnoredDuringExecution())) {
+      builder.addAllPreferredDuringSchedulingIgnoredDuringExecution(
+          mapWeightedPodAffinityTerm(podAntiAffinity
+              .getPreferredDuringSchedulingIgnoredDuringExecution()));
+    }
+
+    return builder.build();
+  }
+
+  public PodAffinity mapPodAffinity(io.fabric8.kubernetes.api.model.PodAffinity podAffinity) {
+    PodAffinity.Builder builder = PodAffinity.newBuilder();
+
+    if (Objects.nonNull(podAffinity.getRequiredDuringSchedulingIgnoredDuringExecution())) {
+      builder.addAllRequiredDuringSchedulingIgnoredDuringExecution(
+          mapPodAffinityTerm(podAffinity.getRequiredDuringSchedulingIgnoredDuringExecution()));
+    }
+
+    if (Objects.nonNull(podAffinity.getPreferredDuringSchedulingIgnoredDuringExecution())) {
+      builder.addAllPreferredDuringSchedulingIgnoredDuringExecution(
+          mapWeightedPodAffinityTerm(podAffinity
+              .getPreferredDuringSchedulingIgnoredDuringExecution()));
+    }
+
+    return builder
         .build();
   }
 
-  private PodAffinity mapPodAffinity(io.fabric8.kubernetes.api.model.PodAffinity podAffinity) {
-    return PodAffinity.newBuilder()
-        .addAllRequiredDuringSchedulingIgnoredDuringExecution(
-            mapPodAffinityTerm(podAffinity.getRequiredDuringSchedulingIgnoredDuringExecution()))
-        .addAllPreferredDuringSchedulingIgnoredDuringExecution(
-            mapWeightedPodAffinityTerm(
-                podAffinity.getPreferredDuringSchedulingIgnoredDuringExecution()))
-        .build();
-  }
-
-  private Iterable<? extends WeightedPodAffinityTerm> mapWeightedPodAffinityTerm(
+  public Iterable<? extends WeightedPodAffinityTerm> mapWeightedPodAffinityTerm(
       List<io.fabric8.kubernetes.api.model.WeightedPodAffinityTerm> preferredDuringSchedulingIgnoredDuringExecution) {
     return preferredDuringSchedulingIgnoredDuringExecution.stream()
-        .map(t -> WeightedPodAffinityTerm.newBuilder()
-            .setWeight(t.getWeight())
-            .setPodAffinityTerm(mapPodAffinityTerm(t.getPodAffinityTerm()))
-            .build())
+        .map(t -> {
+          WeightedPodAffinityTerm.Builder builder = WeightedPodAffinityTerm.newBuilder();
+
+          if (Objects.nonNull(t.getWeight())) {
+            builder.setWeight(t.getWeight());
+          }
+
+          if (Objects.nonNull(t.getPodAffinityTerm())) {
+            builder.setPodAffinityTerm(mapPodAffinityTerm(t.getPodAffinityTerm()));
+          }
+
+          return builder.build();
+        })
         .collect(Collectors.toList());
   }
 
-  private PodAffinityTerm mapPodAffinityTerm(
+  public PodAffinityTerm mapPodAffinityTerm(
       io.fabric8.kubernetes.api.model.PodAffinityTerm podAffinityTerm) {
-    return PodAffinityTerm.newBuilder()
-        .setLabelSelector(mapLabelSelector(podAffinityTerm.getLabelSelector()))
-        .addAllNamespaces(podAffinityTerm.getNamespaces())
-        .setTopologyKey(podAffinityTerm.getTopologyKey())
-        .setNamespaceSelector(mapLabelSelector(podAffinityTerm.getNamespaceSelector()))
-        .addAllMatchLabelKeys(podAffinityTerm.getMatchLabelKeys())
-        .addAllMismatchLabelKeys(podAffinityTerm.getMismatchLabelKeys())
-        .build();
+    PodAffinityTerm.Builder builder = PodAffinityTerm.newBuilder();
+
+    if (Objects.nonNull(podAffinityTerm.getLabelSelector())) {
+      builder.setLabelSelector(mapLabelSelector(podAffinityTerm.getLabelSelector()));
+    }
+
+    if (Objects.nonNull(podAffinityTerm.getNamespaces())) {
+      builder.addAllNamespaces(podAffinityTerm.getNamespaces());
+    }
+
+    if (Objects.nonNull(podAffinityTerm.getTopologyKey())) {
+      builder.setTopologyKey(podAffinityTerm.getTopologyKey());
+    }
+
+    if (Objects.nonNull(podAffinityTerm.getNamespaceSelector())) {
+      builder.setNamespaceSelector(mapLabelSelector(podAffinityTerm.getNamespaceSelector()));
+    }
+
+    if (Objects.nonNull(podAffinityTerm.getMatchLabelKeys())) {
+      builder.addAllMatchLabelKeys(podAffinityTerm.getMatchLabelKeys());
+    }
+
+    if (Objects.nonNull(podAffinityTerm.getMismatchLabelKeys())) {
+      builder.addAllMismatchLabelKeys(podAffinityTerm.getMismatchLabelKeys());
+    }
+
+    return builder.build();
   }
 
-  private Iterable<? extends PodAffinityTerm> mapPodAffinityTerm(
+  public Iterable<? extends PodAffinityTerm> mapPodAffinityTerm(
       List<io.fabric8.kubernetes.api.model.PodAffinityTerm> requiredDuringSchedulingIgnoredDuringExecution) {
     return requiredDuringSchedulingIgnoredDuringExecution.stream()
-        .map(t -> PodAffinityTerm.newBuilder()
-            .setLabelSelector(mapLabelSelector(t.getLabelSelector()))
-            .addAllNamespaces(t.getNamespaces())
-            .setTopologyKey(t.getTopologyKey())
-            .setNamespaceSelector(mapLabelSelector(t.getNamespaceSelector()))
-            .addAllMatchLabelKeys(t.getMatchLabelKeys())
-            .addAllMismatchLabelKeys(t.getMismatchLabelKeys())
-            .build())
+        .map(t -> {
+          PodAffinityTerm.Builder builder = PodAffinityTerm.newBuilder();
+
+          if (Objects.nonNull(t.getLabelSelector())) {
+            builder.setLabelSelector(mapLabelSelector(t.getLabelSelector()));
+          }
+
+          if (Objects.nonNull(t.getNamespaces())) {
+            builder.addAllNamespaces(t.getNamespaces());
+          }
+
+          if (Objects.nonNull(t.getTopologyKey())) {
+            builder.setTopologyKey(t.getTopologyKey());
+          }
+
+          if (Objects.nonNull(t.getNamespaceSelector())) {
+            builder.setNamespaceSelector(mapLabelSelector(t.getNamespaceSelector()));
+          }
+
+          if (Objects.nonNull(t.getMatchLabelKeys())) {
+            builder.addAllMatchLabelKeys(t.getMatchLabelKeys());
+          }
+
+          if (Objects.nonNull(t.getMismatchLabelKeys())) {
+            builder.addAllMismatchLabelKeys(t.getMismatchLabelKeys());
+          }
+
+          return builder.build();
+        })
         .collect(Collectors.toList());
   }
 
-  private LabelSelector mapLabelSelector(
+  public LabelSelector mapLabelSelector(
       io.fabric8.kubernetes.api.model.LabelSelector labelSelector) {
-    return LabelSelector.newBuilder()
-        .putAllMatchLabels(labelSelector.getMatchLabels())
-        .addAllMatchExpressions(mapLabelSelectorRequirement(labelSelector.getMatchExpressions()))
-        .build();
+    LabelSelector.Builder builder = LabelSelector.newBuilder();
+
+    if (Objects.nonNull(labelSelector.getMatchLabels())) {
+      builder.putAllMatchLabels(labelSelector.getMatchLabels());
+    }
+
+    if (Objects.nonNull(labelSelector.getMatchExpressions())) {
+      builder.addAllMatchExpressions(mapLabelSelectorRequirement(labelSelector.getMatchExpressions()));
+    }
+
+    return builder.build();
   }
 
-  private Iterable<? extends LabelSelectorRequirement> mapLabelSelectorRequirement(
+  public Iterable<? extends LabelSelectorRequirement> mapLabelSelectorRequirement(
       List<io.fabric8.kubernetes.api.model.LabelSelectorRequirement> matchExpressions) {
     return matchExpressions.stream()
-        .map(r -> LabelSelectorRequirement.newBuilder()
-            .setKey(r.getKey())
-            .setOperator(r.getOperator())
-            .addAllValues(r.getValues())
-            .build())
+        .map(r -> {
+          LabelSelectorRequirement.Builder builder = LabelSelectorRequirement.newBuilder();
+
+          if (Objects.nonNull(r.getKey())) {
+            builder.setKey(r.getKey());
+          }
+
+          if (Objects.nonNull(r.getOperator())) {
+            builder.setOperator(r.getOperator());
+          }
+
+          if (Objects.nonNull(r.getValues())) {
+            builder.addAllValues(r.getValues());
+          }
+
+          return builder.build();
+        })
         .collect(Collectors.toList());
   }
 
-  private NodeAffinity mapNodeAffinity(io.fabric8.kubernetes.api.model.NodeAffinity nodeAffinity) {
-    return NodeAffinity.newBuilder()
-        .setRequiredDuringSchedulingIgnoredDuringExecution(
-            mapNodeSelector(nodeAffinity.getRequiredDuringSchedulingIgnoredDuringExecution()))
-        .addAllPreferredDuringSchedulingIgnoredDuringExecution(
-            mapPreferredSchedulingTerms(
-                nodeAffinity.getPreferredDuringSchedulingIgnoredDuringExecution()))
-        .build();
+  public NodeAffinity mapNodeAffinity(io.fabric8.kubernetes.api.model.NodeAffinity nodeAffinity) {
+    NodeAffinity.Builder builder = NodeAffinity.newBuilder();
+
+    if (Objects.nonNull(nodeAffinity.getRequiredDuringSchedulingIgnoredDuringExecution())) {
+      builder.setRequiredDuringSchedulingIgnoredDuringExecution(
+          mapNodeSelector(nodeAffinity.getRequiredDuringSchedulingIgnoredDuringExecution()));
+    }
+
+
+    if (Objects.nonNull(nodeAffinity.getPreferredDuringSchedulingIgnoredDuringExecution())) {
+      builder.addAllPreferredDuringSchedulingIgnoredDuringExecution(
+          mapPreferredSchedulingTerms(nodeAffinity.getPreferredDuringSchedulingIgnoredDuringExecution()));
+    }
+
+    return builder.build();
   }
 
-  private Iterable<? extends PreferredSchedulingTerm> mapPreferredSchedulingTerms(
+  public Iterable<? extends PreferredSchedulingTerm> mapPreferredSchedulingTerms(
       List<io.fabric8.kubernetes.api.model.PreferredSchedulingTerm> preferredDuringSchedulingIgnoredDuringExecution) {
     return preferredDuringSchedulingIgnoredDuringExecution.stream()
-        .map(t -> PreferredSchedulingTerm.newBuilder()
-            .setWeight(t.getWeight())
-            .setPreference(mapNodeSelector(t.getPreference()))
-            .build())
+        .map(t -> {
+          PreferredSchedulingTerm.Builder builder = PreferredSchedulingTerm.newBuilder();
+
+          if (Objects.nonNull(t.getWeight())) {
+            builder.setWeight(t.getWeight());
+          }
+
+          if (Objects.nonNull(t.getPreference())) {
+            builder.setPreference(mapNodeSelector(t.getPreference()));
+          }
+
+          return builder.build();
+        })
         .collect(Collectors.toList());
   }
 
-  private NodeSelectorTerm mapNodeSelector(
+  public NodeSelectorTerm mapNodeSelector(
       io.fabric8.kubernetes.api.model.NodeSelectorTerm preference) {
-    return NodeSelectorTerm.newBuilder()
-        .addAllMatchExpressions(mapNodeSelectorRequirement(preference.getMatchExpressions()))
-        .addAllMatchFields(mapNodeSelectorRequirement(preference.getMatchFields()))
-        .build();
+    NodeSelectorTerm.Builder builder = NodeSelectorTerm.newBuilder();
+
+    if (Objects.nonNull(preference.getMatchExpressions())) {
+      builder.addAllMatchExpressions(mapNodeSelectorRequirement(preference.getMatchExpressions()));
+    }
+
+    if (Objects.nonNull(preference.getMatchFields())) {
+      builder.addAllMatchFields(mapNodeSelectorRequirement(preference.getMatchFields()));
+    }
+
+    return builder.build();
   }
 
-  private NodeSelector mapNodeSelector(
+  public NodeSelector mapNodeSelector(
       io.fabric8.kubernetes.api.model.NodeSelector requiredDuringSchedulingIgnoredDuringExecution) {
-    return NodeSelector.newBuilder()
-        .addAllNodeSelectorTerms(mapNodeSelectorTerms(
-            requiredDuringSchedulingIgnoredDuringExecution.getNodeSelectorTerms()))
-        .build();
+    NodeSelector.Builder builder = NodeSelector.newBuilder();
+
+    if (Objects.nonNull(requiredDuringSchedulingIgnoredDuringExecution.getNodeSelectorTerms())) {
+      builder.addAllNodeSelectorTerms(mapNodeSelectorTerms(
+          requiredDuringSchedulingIgnoredDuringExecution.getNodeSelectorTerms()));
+    }
+
+    return builder.build();
   }
 
-  private Iterable<? extends NodeSelectorTerm> mapNodeSelectorTerms(
+  public Iterable<? extends NodeSelectorTerm> mapNodeSelectorTerms(
       List<io.fabric8.kubernetes.api.model.NodeSelectorTerm> nodeSelectorTerms) {
     return nodeSelectorTerms.stream()
-        .map(t -> NodeSelectorTerm.newBuilder()
-            .addAllMatchExpressions(mapNodeSelectorRequirement(t.getMatchExpressions()))
-            .addAllMatchFields(mapNodeSelectorRequirement(t.getMatchFields()))
-            .build())
+        .map(t -> {
+          NodeSelectorTerm.Builder builder = NodeSelectorTerm.newBuilder();
+
+          if (Objects.nonNull(t.getMatchExpressions())) {
+            builder.addAllMatchExpressions(mapNodeSelectorRequirement(t.getMatchExpressions()));
+          }
+
+          if (Objects.nonNull(t.getMatchFields())) {
+            builder.addAllMatchFields(mapNodeSelectorRequirement(t.getMatchFields()));
+          }
+
+          return builder.build();
+        })
         .collect(Collectors.toList());
   }
 
-  private Iterable<? extends NodeSelectorRequirement> mapNodeSelectorRequirement(
+  public Iterable<? extends NodeSelectorRequirement> mapNodeSelectorRequirement(
       List<io.fabric8.kubernetes.api.model.NodeSelectorRequirement> matchExpressions) {
     return matchExpressions.stream()
-        .map(r -> NodeSelectorRequirement.newBuilder()
-            .setKey(r.getKey())
-            .setOperator(r.getOperator())
-            .addAllValues(r.getValues())
-            .build())
+        .map(r -> {
+          NodeSelectorRequirement.Builder builder = NodeSelectorRequirement.newBuilder();
+
+          if (Objects.nonNull(r.getKey())) {
+            builder.setKey(r.getKey());
+          }
+
+          if (Objects.nonNull(r.getOperator())) {
+            builder.setOperator(r.getOperator());
+          }
+
+          if (Objects.nonNull(r.getValues())) {
+            builder.addAllValues(r.getValues());
+          }
+
+          return builder.build();
+        })
         .collect(Collectors.toList());
   }
 
-  private Iterable<? extends LocalObjectReference> mapLocalObjectReference(
+  public Iterable<? extends LocalObjectReference> mapLocalObjectReference(
       List<io.fabric8.kubernetes.api.model.LocalObjectReference> imagePullSecrets) {
     return imagePullSecrets.stream()
-        .map(r -> LocalObjectReference.newBuilder()
-            .setName(r.getName())
-            .build())
+        .map(r -> {
+          LocalObjectReference.Builder builder = LocalObjectReference.newBuilder();
+
+          if (Objects.nonNull(r.getName())) {
+            builder.setName(r.getName());
+          }
+
+          return builder.build();
+        })
         .collect(Collectors.toList());
   }
 
-  private PodSecurityContext mapPodSecurityContext(
+  public PodSecurityContext mapPodSecurityContext(
       io.fabric8.kubernetes.api.model.PodSecurityContext securityContext) {
-    // TODO fix NPEs
-    return PodSecurityContext.newBuilder()
-        .setSeLinuxOptions(mapSeLinuxOptions(securityContext.getSeLinuxOptions()))
-        .setWindowsOptions(mapWindowsOptions(securityContext.getWindowsOptions()))
-        .setRunAsUser(securityContext.getRunAsUser())
-        .setRunAsGroup(securityContext.getRunAsGroup())
-        .setRunAsNonRoot(securityContext.getRunAsNonRoot())
-        .addAllSupplementalGroups(securityContext.getSupplementalGroups())
-        // FIXME mismatch
-        // .setSupplementalGroupsPolicy()
-        .setFsGroup(securityContext.getFsGroup())
-        .addAllSysctls(mapSysctls(securityContext.getSysctls()))
-        .setFsGroupChangePolicy(securityContext.getFsGroupChangePolicy())
-        .setSeccompProfile(mapSeccompProfile(securityContext.getSeccompProfile()))
-        // FIXME mismatch
-        // .setAppArmorProfile()
-        .build();
+    PodSecurityContext.Builder builder = PodSecurityContext.newBuilder();
+
+    if (Objects.nonNull(securityContext.getSeLinuxOptions())) {
+      builder.setSeLinuxOptions(mapSeLinuxOptions(securityContext.getSeLinuxOptions()));
+    }
+
+    if (Objects.nonNull(securityContext.getWindowsOptions())) {
+      builder.setWindowsOptions(mapWindowsOptions(securityContext.getWindowsOptions()));
+    }
+
+    if (Objects.nonNull(securityContext.getRunAsUser())) {
+      builder.setRunAsUser(securityContext.getRunAsUser());
+    }
+
+    if (Objects.nonNull(securityContext.getRunAsGroup())) {
+      builder.setRunAsGroup(securityContext.getRunAsGroup());
+    }
+
+    if (Objects.nonNull(securityContext.getRunAsNonRoot())) {
+      builder.setRunAsNonRoot(securityContext.getRunAsNonRoot());
+    }
+
+    if (Objects.nonNull(securityContext.getSupplementalGroups())) {
+      builder.addAllSupplementalGroups(securityContext.getSupplementalGroups());
+    }
+
+    if (Objects.nonNull(securityContext.getFsGroup())) {
+      builder.setFsGroup(securityContext.getFsGroup());
+    }
+
+    if (Objects.nonNull(securityContext.getSysctls())) {
+      builder.addAllSysctls(mapSysctls(securityContext.getSysctls()));
+    }
+
+    if (Objects.nonNull(securityContext.getFsGroupChangePolicy())) {
+      builder.setFsGroupChangePolicy(securityContext.getFsGroupChangePolicy());
+    }
+
+    if (Objects.nonNull(securityContext.getSeccompProfile())) {
+      builder.setSeccompProfile(mapSeccompProfile(securityContext.getSeccompProfile()));
+    }
+
+    // FIXME mismatch
+    // .setAppArmorProfile()
+    // .setSupplementalGroupsPolicy()
+    return builder.build();
   }
 
-  private Iterable<? extends Sysctl> mapSysctls(
+  public Iterable<? extends Sysctl> mapSysctls(
       List<io.fabric8.kubernetes.api.model.Sysctl> sysctls) {
     return sysctls.stream()
-        .map(s -> Sysctl.newBuilder()
-            .setName(s.getName())
-            .setValue(s.getValue())
-            .build())
+        .map(s -> {
+          Sysctl.Builder builder = Sysctl.newBuilder();
+
+          if (Objects.nonNull(s.getName())) {
+            builder.setName(s.getName());
+          }
+
+          if (Objects.nonNull(s.getValue())) {
+            builder.setValue(s.getValue());
+          }
+
+          return builder.build();
+        })
         .collect(Collectors.toList());
   }
 
-  private Iterable<? extends EphemeralContainer> mapEphermalContainers(
+  @SuppressFBWarnings("UPM_UNCALLED_public_METHOD")
+  public Iterable<? extends EphemeralContainer> mapEphermalContainers(
       List<io.fabric8.kubernetes.api.model.EphemeralContainer> ephemeralContainers) {
     return ephemeralContainers
         .stream()
@@ -646,133 +880,106 @@ public class ArmadaMapper {
           EphemeralContainer.Builder ecBuilder = EphemeralContainer.newBuilder();
 
           EphemeralContainerCommon.Builder epcBuilder = EphemeralContainerCommon.newBuilder();
-          String name = c.getName();
-          if (Objects.nonNull(name)) {
-            epcBuilder.setName(name);
+          if (Objects.nonNull(c.getName())) {
+            epcBuilder.setName(c.getName());
           }
 
-          String image = c.getImage();
-          if (Objects.nonNull(image)) {
-            epcBuilder.setImage(image);
+          if (Objects.nonNull(c.getImage())) {
+            epcBuilder.setImage(c.getImage());
           }
 
-          List<String> command = c.getCommand();
-          if (Objects.nonNull(command) && !command.isEmpty()) {
-            epcBuilder.addAllCommand(command);
+          if (Objects.nonNull(c.getCommand())) {
+            epcBuilder.addAllCommand(c.getCommand());
           }
 
-          List<String> args = c.getArgs();
-          if (Objects.nonNull(args) && !args.isEmpty()) {
-            epcBuilder.addAllArgs(args);
+          if (Objects.nonNull(c.getArgs())) {
+            epcBuilder.addAllArgs(c.getArgs());
           }
 
-          String workingDir = c.getWorkingDir();
-          if (Objects.nonNull(workingDir)) {
-            epcBuilder.setWorkingDir(workingDir);
+          if (Objects.nonNull(c.getWorkingDir())) {
+            epcBuilder.setWorkingDir(c.getWorkingDir());
           }
 
-          List<io.fabric8.kubernetes.api.model.ContainerPort> ports = c.getPorts();
-          if (Objects.nonNull(ports) && !ports.isEmpty()) {
-            epcBuilder.addAllPorts(mapContainerPorts(ports));
+          if (Objects.nonNull(c.getPorts())) {
+            epcBuilder.addAllPorts(mapContainerPorts(c.getPorts()));
           }
 
-          List<io.fabric8.kubernetes.api.model.EnvFromSource> envFrom = c.getEnvFrom();
-          if (Objects.nonNull(envFrom) && !envFrom.isEmpty()) {
-            epcBuilder.addAllEnvFrom(mapEnvFromSource(envFrom));
+          if (Objects.nonNull(c.getEnvFrom())) {
+            epcBuilder.addAllEnvFrom(mapEnvFromSource(c.getEnvFrom()));
           }
 
-          List<io.fabric8.kubernetes.api.model.EnvVar> env = c.getEnv();
-          if (Objects.nonNull(env) && !env.isEmpty()) {
-            epcBuilder.addAllEnv(mapEnvVars(env));
+          if (Objects.nonNull(c.getEnv())) {
+            epcBuilder.addAllEnv(mapEnvVars(c.getEnv()));
           }
 
-          io.fabric8.kubernetes.api.model.ResourceRequirements resources = c.getResources();
-          if (Objects.nonNull(resources)) {
-            epcBuilder.setResources(mapResourceRequirements(resources));
+          if (Objects.nonNull(c.getResources())) {
+            epcBuilder.setResources(mapResourceRequirements(c.getResources()));
           }
 
-          List<io.fabric8.kubernetes.api.model.ContainerResizePolicy> resizePolicy =
-              c.getResizePolicy();
-          if (Objects.nonNull(resizePolicy) && !resizePolicy.isEmpty()) {
-            epcBuilder.addAllResizePolicy(mapContainerResizePolicy(resizePolicy));
+          if (Objects.nonNull(c.getResizePolicy())) {
+            epcBuilder.addAllResizePolicy(mapContainerResizePolicy(c.getResizePolicy()));
           }
 
-          String restartPolicy = c.getRestartPolicy();
-          if (Objects.nonNull(restartPolicy)) {
-            epcBuilder.setRestartPolicy(restartPolicy);
+          if (Objects.nonNull(c.getRestartPolicy())) {
+            epcBuilder.setRestartPolicy(c.getRestartPolicy());
           }
 
-          List<io.fabric8.kubernetes.api.model.VolumeMount> volumeMounts = c.getVolumeMounts();
-          if (Objects.nonNull(volumeMounts) && !volumeMounts.isEmpty()) {
-            epcBuilder.addAllVolumeMounts(mapVolumeMounts(volumeMounts));
+          if (Objects.nonNull(c.getVolumeMounts())) {
+            epcBuilder.addAllVolumeMounts(mapVolumeMounts(c.getVolumeMounts()));
           }
 
-          List<io.fabric8.kubernetes.api.model.VolumeDevice> volumeDevices = c.getVolumeDevices();
-          if (Objects.nonNull(volumeDevices) && !volumeDevices.isEmpty()) {
-            epcBuilder.addAllVolumeDevices(mapVolumeDevices(volumeDevices));
+          if (Objects.nonNull(c.getVolumeDevices())) {
+            epcBuilder.addAllVolumeDevices(mapVolumeDevices(c.getVolumeDevices()));
           }
 
-          io.fabric8.kubernetes.api.model.Probe livenessProbe = c.getLivenessProbe();
-          if (Objects.nonNull(livenessProbe)) {
-            epcBuilder.setLivenessProbe(mapProbe(livenessProbe));
+          if (Objects.nonNull(c.getLivenessProbe())) {
+            epcBuilder.setLivenessProbe(mapProbe(c.getLivenessProbe()));
           }
 
-          io.fabric8.kubernetes.api.model.Probe readinessProbe = c.getReadinessProbe();
-          if (Objects.nonNull(readinessProbe)) {
-            epcBuilder.setReadinessProbe(mapProbe(readinessProbe));
+          if (Objects.nonNull(c.getReadinessProbe())) {
+            epcBuilder.setReadinessProbe(mapProbe(c.getReadinessProbe()));
           }
 
-          io.fabric8.kubernetes.api.model.Probe startupProbe = c.getStartupProbe();
-          if (Objects.nonNull(startupProbe)) {
-            epcBuilder.setStartupProbe(mapProbe(startupProbe));
+          if (Objects.nonNull(c.getStartupProbe())) {
+            epcBuilder.setStartupProbe(mapProbe(c.getStartupProbe()));
           }
 
-          io.fabric8.kubernetes.api.model.Lifecycle lifecycle = c.getLifecycle();
-          if (Objects.nonNull(lifecycle)) {
-            epcBuilder.setLifecycle(mapLifecycle(lifecycle));
+          if (Objects.nonNull(c.getLifecycle())) {
+            epcBuilder.setLifecycle(mapLifecycle(c.getLifecycle()));
           }
 
-          String terminationMessagePath = c.getTerminationMessagePath();
-          if (Objects.nonNull(terminationMessagePath)) {
-            epcBuilder.setTerminationMessagePath(terminationMessagePath);
+          if (Objects.nonNull(c.getTerminationMessagePath())) {
+            epcBuilder.setTerminationMessagePath(c.getTerminationMessagePath());
           }
 
-          String terminationMessagePolicy = c.getTerminationMessagePolicy();
-          if (Objects.nonNull(terminationMessagePolicy)) {
-            epcBuilder.setTerminationMessagePolicy(terminationMessagePolicy);
+          if (Objects.nonNull(c.getTerminationMessagePolicy())) {
+            epcBuilder.setTerminationMessagePolicy(c.getTerminationMessagePolicy());
           }
 
-          String imagePullPolicy = c.getImagePullPolicy();
-          if (Objects.nonNull(imagePullPolicy)) {
-            epcBuilder.setImagePullPolicy(imagePullPolicy);
+          if (Objects.nonNull(c.getImagePullPolicy())) {
+            epcBuilder.setImagePullPolicy(c.getImagePullPolicy());
           }
 
-          io.fabric8.kubernetes.api.model.SecurityContext securityContext = c.getSecurityContext();
-          if (Objects.nonNull(securityContext)) {
-            epcBuilder.setSecurityContext(mapSecurityContext(securityContext));
+          if (Objects.nonNull(c.getSecurityContext())) {
+            epcBuilder.setSecurityContext(mapSecurityContext(c.getSecurityContext()));
           }
 
-          Boolean stdin = c.getStdin();
-          if (Objects.nonNull(stdin)) {
-            epcBuilder.setStdin(stdin);
+          if (Objects.nonNull(c.getStdin())) {
+            epcBuilder.setStdin(c.getStdin());
           }
 
-          Boolean stdinOnce = c.getStdinOnce();
-          if (Objects.nonNull(stdinOnce)) {
-            epcBuilder.setStdinOnce(stdinOnce);
+          if (Objects.nonNull(c.getStdinOnce())) {
+            epcBuilder.setStdinOnce(c.getStdinOnce());
           }
 
-          Boolean tty = c.getTty();
-          if (Objects.nonNull(tty)) {
-            epcBuilder.setTty(tty);
+          if (Objects.nonNull(c.getTty())) {
+            epcBuilder.setTty(c.getTty());
           }
 
-          // TODO fix if not initialized
           ecBuilder.setEphemeralContainerCommon(epcBuilder.build());
 
-          String targetContainerName = c.getTargetContainerName();
-          if (Objects.nonNull(targetContainerName)) {
-            ecBuilder.setTargetContainerName(targetContainerName);
+          if (Objects.nonNull(c.getTargetContainerName())) {
+            ecBuilder.setTargetContainerName(c.getTargetContainerName());
           }
 
           return ecBuilder.build();
@@ -780,132 +987,107 @@ public class ArmadaMapper {
         .collect(Collectors.toList());
   }
 
-  private Iterable<? extends Container> mapContainers(
+  public Iterable<? extends Container> mapContainers(
       List<io.fabric8.kubernetes.api.model.Container> containers) {
     return containers
         .stream()
         .map(c -> {
           Container.Builder builder = Container.newBuilder();
 
-          String name = c.getName();
-          if (Objects.nonNull(name)) {
-            builder.setName(name);
+          if (Objects.nonNull(c.getName())) {
+            builder.setName(c.getName());
           }
 
-          String image = c.getImage();
-          if (Objects.nonNull(image)) {
-            builder.setImage(image);
+          if (Objects.nonNull(c.getImage())) {
+            builder.setImage(c.getImage());
           }
 
-          List<String> command = c.getCommand();
-          if (Objects.nonNull(command) && !command.isEmpty()) {
-            builder.addAllCommand(command);
+          if (Objects.nonNull(c.getCommand())) {
+            builder.addAllCommand(c.getCommand());
           }
 
-          List<String> args = c.getArgs();
-          if (Objects.nonNull(args) && !args.isEmpty()) {
-            builder.addAllArgs(args);
+          if (Objects.nonNull(c.getArgs())) {
+            builder.addAllArgs(c.getArgs());
           }
 
-          String workingDir = c.getWorkingDir();
-          if (Objects.nonNull(workingDir)) {
-            builder.setWorkingDir(workingDir);
+          if (Objects.nonNull(c.getWorkingDir())) {
+            builder.setWorkingDir(c.getWorkingDir());
           }
 
-          List<io.fabric8.kubernetes.api.model.ContainerPort> ports = c.getPorts();
-          if (Objects.nonNull(ports) && !ports.isEmpty()) {
-            builder.addAllPorts(mapContainerPorts(ports));
+          if (Objects.nonNull(c.getPorts())) {
+            builder.addAllPorts(mapContainerPorts(c.getPorts()));
           }
 
-          List<io.fabric8.kubernetes.api.model.EnvFromSource> envFrom = c.getEnvFrom();
-          if (Objects.nonNull(envFrom) && !envFrom.isEmpty()) {
-            builder.addAllEnvFrom(mapEnvFromSource(envFrom));
+          if (Objects.nonNull(c.getEnvFrom())) {
+            builder.addAllEnvFrom(mapEnvFromSource(c.getEnvFrom()));
           }
 
-          List<io.fabric8.kubernetes.api.model.EnvVar> env = c.getEnv();
-          if (Objects.nonNull(env) && !env.isEmpty()) {
-            builder.addAllEnv(mapEnvVars(env));
+          if (Objects.nonNull(c.getEnv())) {
+            builder.addAllEnv(mapEnvVars(c.getEnv()));
           }
 
-          io.fabric8.kubernetes.api.model.ResourceRequirements resources = c.getResources();
-          if (Objects.nonNull(resources)) {
-            builder.setResources(mapResourceRequirements(resources));
+          if (Objects.nonNull(c.getResources())) {
+            builder.setResources(mapResourceRequirements(c.getResources()));
           }
 
-          List<io.fabric8.kubernetes.api.model.ContainerResizePolicy> resizePolicy =
-              c.getResizePolicy();
-          if (Objects.nonNull(resizePolicy) && !resizePolicy.isEmpty()) {
-            builder.addAllResizePolicy(mapContainerResizePolicy(resizePolicy));
+          if (Objects.nonNull(c.getResizePolicy())) {
+            builder.addAllResizePolicy(mapContainerResizePolicy(c.getResizePolicy()));
           }
 
-          String restartPolicy = c.getRestartPolicy();
-          if (Objects.nonNull(restartPolicy)) {
-            builder.setRestartPolicy(restartPolicy);
+          if (Objects.nonNull(c.getRestartPolicy())) {
+            builder.setRestartPolicy(c.getRestartPolicy());
           }
 
-          List<io.fabric8.kubernetes.api.model.VolumeMount> volumeMounts = c.getVolumeMounts();
-          if (Objects.nonNull(volumeMounts) && !volumeMounts.isEmpty()) {
-            builder.addAllVolumeMounts(mapVolumeMounts(volumeMounts));
+          if (Objects.nonNull(c.getVolumeMounts())) {
+            builder.addAllVolumeMounts(mapVolumeMounts(c.getVolumeMounts()));
           }
 
-          List<io.fabric8.kubernetes.api.model.VolumeDevice> volumeDevices = c.getVolumeDevices();
-          if (Objects.nonNull(volumeDevices) && !volumeDevices.isEmpty()) {
-            builder.addAllVolumeDevices(mapVolumeDevices(volumeDevices));
+          if (Objects.nonNull(c.getVolumeDevices())) {
+            builder.addAllVolumeDevices(mapVolumeDevices(c.getVolumeDevices()));
           }
 
-          io.fabric8.kubernetes.api.model.Probe livenessProbe = c.getLivenessProbe();
-          if (Objects.nonNull(livenessProbe)) {
-            builder.setLivenessProbe(mapProbe(livenessProbe));
+          if (Objects.nonNull(c.getLivenessProbe())) {
+            builder.setLivenessProbe(mapProbe(c.getLivenessProbe()));
           }
 
-          io.fabric8.kubernetes.api.model.Probe readinessProbe = c.getReadinessProbe();
-          if (Objects.nonNull(readinessProbe)) {
-            builder.setReadinessProbe(mapProbe(readinessProbe));
+          if (Objects.nonNull(c.getReadinessProbe())) {
+            builder.setReadinessProbe(mapProbe(c.getReadinessProbe()));
           }
 
-          io.fabric8.kubernetes.api.model.Probe startupProbe = c.getStartupProbe();
-          if (Objects.nonNull(startupProbe)) {
-            builder.setStartupProbe(mapProbe(startupProbe));
+          if (Objects.nonNull(c.getStartupProbe())) {
+            builder.setStartupProbe(mapProbe(c.getStartupProbe()));
           }
 
-          io.fabric8.kubernetes.api.model.Lifecycle lifecycle = c.getLifecycle();
-          if (Objects.nonNull(lifecycle)) {
-            builder.setLifecycle(mapLifecycle(lifecycle));
+          if (Objects.nonNull(c.getLifecycle())) {
+            builder.setLifecycle(mapLifecycle(c.getLifecycle()));
           }
 
-          String terminationMessagePath = c.getTerminationMessagePath();
-          if (Objects.nonNull(terminationMessagePath)) {
-            builder.setTerminationMessagePath(terminationMessagePath);
+          if (Objects.nonNull(c.getTerminationMessagePath())) {
+            builder.setTerminationMessagePath(c.getTerminationMessagePath());
           }
 
-          String terminationMessagePolicy = c.getTerminationMessagePolicy();
-          if (Objects.nonNull(terminationMessagePolicy)) {
-            builder.setTerminationMessagePolicy(terminationMessagePolicy);
+          if (Objects.nonNull(c.getTerminationMessagePolicy())) {
+            builder.setTerminationMessagePolicy(c.getTerminationMessagePolicy());
           }
 
-          String imagePullPolicy = c.getImagePullPolicy();
-          if (Objects.nonNull(imagePullPolicy)) {
-            builder.setImagePullPolicy(imagePullPolicy);
+          if (Objects.nonNull(c.getImagePullPolicy())) {
+            builder.setImagePullPolicy(c.getImagePullPolicy());
           }
 
-          io.fabric8.kubernetes.api.model.SecurityContext securityContext = c.getSecurityContext();
-          if (Objects.nonNull(securityContext)) {
-            builder.setSecurityContext(mapSecurityContext(securityContext));
+          if (Objects.nonNull(c.getSecurityContext())) {
+            builder.setSecurityContext(mapSecurityContext(c.getSecurityContext()));
           }
 
-          Boolean stdin = c.getStdin();
-          if (Objects.nonNull(stdin)) {
-            builder.setStdin(stdin);
+          if (Objects.nonNull(c.getStdin())) {
+            builder.setStdin(c.getStdin());
           }
 
-          Boolean stdinOnce = c.getStdinOnce();
-          if (Objects.nonNull(stdinOnce)) {
-            builder.setStdinOnce(stdinOnce);
+          if (Objects.nonNull(c.getStdinOnce())) {
+            builder.setStdinOnce(c.getStdinOnce());
           }
 
-          Boolean tty = c.getTty();
-          if (Objects.nonNull(tty)) {
-            builder.setTty(tty);
+          if (Objects.nonNull(c.getTty())) {
+            builder.setTty(c.getTty());
           }
 
           return builder.build();
@@ -913,228 +1095,309 @@ public class ArmadaMapper {
         .collect(Collectors.toList());
   }
 
-  private SecurityContext mapSecurityContext(
+  public SecurityContext mapSecurityContext(
       io.fabric8.kubernetes.api.model.SecurityContext securityContext) {
-    return SecurityContext.newBuilder()
-        .setCapabilities(mapCapabilities(securityContext.getCapabilities()))
-        .setPrivileged(securityContext.getPrivileged())
-        .setSeLinuxOptions(mapSeLinuxOptions(securityContext.getSeLinuxOptions()))
-        .setWindowsOptions(mapWindowsOptions(securityContext.getWindowsOptions()))
-        .setRunAsUser(securityContext.getRunAsUser())
-        .setRunAsGroup(securityContext.getRunAsGroup())
-        .setRunAsNonRoot(securityContext.getRunAsNonRoot())
-        .setReadOnlyRootFilesystem(securityContext.getReadOnlyRootFilesystem())
-        .setAllowPrivilegeEscalation(securityContext.getAllowPrivilegeEscalation())
-        .setProcMount(securityContext.getProcMount())
-        .setSeccompProfile(mapSeccompProfile(securityContext.getSeccompProfile()))
-        // FIXME mismatch
-        // .setAppArmorProfile()
-        .build();
+    SecurityContext.Builder builder = SecurityContext.newBuilder();
+
+    if (Objects.nonNull(securityContext.getCapabilities())) {
+      builder.setCapabilities(mapCapabilities(securityContext.getCapabilities()));
+    }
+
+    if (Objects.nonNull(securityContext.getPrivileged())) {
+      builder.setPrivileged(securityContext.getPrivileged());
+    }
+
+    if (Objects.nonNull(securityContext.getSeLinuxOptions())) {
+      builder.setSeLinuxOptions(mapSeLinuxOptions(securityContext.getSeLinuxOptions()));
+    }
+
+    if (Objects.nonNull(securityContext.getWindowsOptions())) {
+      builder.setWindowsOptions(mapWindowsOptions(securityContext.getWindowsOptions()));
+    }
+
+    if (Objects.nonNull(securityContext.getRunAsUser())) {
+      builder.setRunAsUser(securityContext.getRunAsUser());
+    }
+
+    if (Objects.nonNull(securityContext.getRunAsGroup())) {
+      builder.setRunAsGroup(securityContext.getRunAsGroup());
+    }
+
+    if (Objects.nonNull(securityContext.getRunAsNonRoot())) {
+      builder.setRunAsNonRoot(securityContext.getRunAsNonRoot());
+    }
+
+    if (Objects.nonNull(securityContext.getReadOnlyRootFilesystem())) {
+      builder.setReadOnlyRootFilesystem(securityContext.getReadOnlyRootFilesystem());
+    }
+
+    if (Objects.nonNull(securityContext.getAllowPrivilegeEscalation())) {
+      builder.setAllowPrivilegeEscalation(securityContext.getAllowPrivilegeEscalation());
+    }
+
+    if (Objects.nonNull(securityContext.getProcMount())) {
+      builder.setProcMount(securityContext.getProcMount());
+    }
+
+    if (Objects.nonNull(securityContext.getSeccompProfile())) {
+      builder.setSeccompProfile(mapSeccompProfile(securityContext.getSeccompProfile()));
+    }
+
+    // FIXME mismatch
+    // .setAppArmorProfile()
+    return builder.build();
   }
 
-  private SeccompProfile mapSeccompProfile(
+  public SeccompProfile mapSeccompProfile(
       io.fabric8.kubernetes.api.model.SeccompProfile seccompProfile) {
-    return SeccompProfile.newBuilder()
-        .setType(seccompProfile.getType())
-        .setLocalhostProfile(seccompProfile.getLocalhostProfile())
-        .build();
+    SeccompProfile.Builder builder = SeccompProfile.newBuilder();
+
+    if (Objects.nonNull(seccompProfile.getType())) {
+      builder.setType(seccompProfile.getType());
+    }
+
+    if (Objects.nonNull(seccompProfile.getLocalhostProfile())) {
+      builder.setLocalhostProfile(seccompProfile.getLocalhostProfile());
+    }
+
+    return builder.build();
   }
 
-  private WindowsSecurityContextOptions mapWindowsOptions(
+  public WindowsSecurityContextOptions mapWindowsOptions(
       io.fabric8.kubernetes.api.model.WindowsSecurityContextOptions windowsOptions) {
-    return WindowsSecurityContextOptions.newBuilder()
-        .setGmsaCredentialSpec(windowsOptions.getGmsaCredentialSpec())
-        .setGmsaCredentialSpec(windowsOptions.getGmsaCredentialSpec())
-        .setRunAsUserName(windowsOptions.getRunAsUserName())
-        .setHostProcess(windowsOptions.getHostProcess())
-        .build();
+    WindowsSecurityContextOptions.Builder builder = WindowsSecurityContextOptions.newBuilder();
+
+    if (Objects.nonNull(windowsOptions.getGmsaCredentialSpec())) {
+      builder.setGmsaCredentialSpec(windowsOptions.getGmsaCredentialSpec());
+    }
+
+    if (Objects.nonNull(windowsOptions.getGmsaCredentialSpecName())) {
+      builder.setGmsaCredentialSpecName(windowsOptions.getGmsaCredentialSpecName());
+    }
+
+    if (Objects.nonNull(windowsOptions.getRunAsUserName())) {
+      builder.setRunAsUserName(windowsOptions.getRunAsUserName());
+    }
+
+    if (Objects.nonNull(windowsOptions.getHostProcess())) {
+      builder.setHostProcess(windowsOptions.getHostProcess());
+    }
+
+    return builder.build();
   }
 
-  private SELinuxOptions mapSeLinuxOptions(
+  public SELinuxOptions mapSeLinuxOptions(
       io.fabric8.kubernetes.api.model.SELinuxOptions seLinuxOptions) {
-    return SELinuxOptions.newBuilder()
-        .setUser(seLinuxOptions.getUser())
-        .setRole(seLinuxOptions.getRole())
-        .setType(seLinuxOptions.getType())
-        .setLevel(seLinuxOptions.getLevel())
-        .build();
+    SELinuxOptions.Builder builder = SELinuxOptions.newBuilder();
+
+    if (Objects.nonNull(seLinuxOptions.getUser())) {
+      builder.setUser(seLinuxOptions.getUser());
+    }
+
+    if (Objects.nonNull(seLinuxOptions.getRole())) {
+      builder.setRole(seLinuxOptions.getRole());
+    }
+
+    if (Objects.nonNull(seLinuxOptions.getType())) {
+      builder.setType(seLinuxOptions.getType());
+    }
+
+    if (Objects.nonNull(seLinuxOptions.getLevel())) {
+      builder.setLevel(seLinuxOptions.getLevel());
+    }
+
+    return builder.build();
   }
 
-  private Capabilities mapCapabilities(io.fabric8.kubernetes.api.model.Capabilities capabilities) {
-    return Capabilities.newBuilder()
-        .addAllAdd(capabilities.getAdd())
-        .addAllDrop(capabilities.getDrop())
-        .build();
+  public Capabilities mapCapabilities(io.fabric8.kubernetes.api.model.Capabilities capabilities) {
+    Capabilities.Builder builder = Capabilities.newBuilder();
+
+    if (Objects.nonNull(capabilities.getDrop())) {
+      builder.addAllDrop(capabilities.getDrop());
+    }
+
+    if (Objects.nonNull(capabilities.getAdd())) {
+      builder.addAllAdd(capabilities.getAdd());
+    }
+
+    return builder.build();
   }
 
-  private Lifecycle mapLifecycle(io.fabric8.kubernetes.api.model.Lifecycle lifecycle) {
-    return Lifecycle.newBuilder()
-        .setPostStart(mapLifecycleHandler(lifecycle.getPostStart()))
-        .setPreStop(mapLifecycleHandler(lifecycle.getPreStop()))
-        .build();
+  public Lifecycle mapLifecycle(io.fabric8.kubernetes.api.model.Lifecycle lifecycle) {
+    Lifecycle.Builder builder = Lifecycle.newBuilder();
+
+    if (Objects.nonNull(lifecycle.getPostStart())) {
+      builder.setPostStart(mapLifecycleHandler(lifecycle.getPostStart()));
+    }
+
+    if (Objects.nonNull(lifecycle.getPreStop())) {
+      builder.setPreStop(mapLifecycleHandler(lifecycle.getPreStop()));
+    }
+
+    return builder.build();
   }
 
-  private LifecycleHandler mapLifecycleHandler(
+  public LifecycleHandler mapLifecycleHandler(
       io.fabric8.kubernetes.api.model.LifecycleHandler postStart) {
-    return LifecycleHandler.newBuilder()
-        .setExec(ExecAction.newBuilder()
-            .addAllCommand(postStart.getExec().getCommand())
-            .build())
-        .setHttpGet(mapHttpGetAction(postStart.getHttpGet()))
-        .setTcpSocket(mapTCPSocketAction(postStart.getTcpSocket()))
-        .setSleep(SleepAction.newBuilder().setSeconds(postStart.getSleep().getSeconds()).build())
-        .build();
+    LifecycleHandler.Builder builder = LifecycleHandler.newBuilder();
+
+    if (Objects.nonNull(postStart.getExec())) {
+      if (Objects.nonNull(postStart.getExec().getCommand())) {
+        builder.setExec(
+            ExecAction.newBuilder().addAllCommand(postStart.getExec().getCommand()).build());
+      }
+    }
+
+    if (Objects.nonNull(postStart.getHttpGet())) {
+      builder.setHttpGet(mapHttpGetAction(postStart.getHttpGet()));
+    }
+
+    if (Objects.nonNull(postStart.getTcpSocket())) {
+      builder.setTcpSocket(mapTCPSocketAction(postStart.getTcpSocket()));
+    }
+
+    if (Objects.nonNull(postStart.getSleep())) {
+      if (Objects.nonNull(postStart.getSleep().getSeconds())) {
+        builder.setSleep(
+            SleepAction.newBuilder().setSeconds(postStart.getSleep().getSeconds()).build());
+      }
+    }
+
+    return builder.build();
   }
 
-  private Probe mapProbe(io.fabric8.kubernetes.api.model.Probe livenessProbe) {
+  public Probe mapProbe(io.fabric8.kubernetes.api.model.Probe livenessProbe) {
     Probe.Builder builder = Probe.newBuilder();
 
     // TODO might be issues because proble handler is always default if nothing else
     builder.setHandler(mapProbeHandler(livenessProbe));
 
-    Integer initialDelaySeconds = livenessProbe.getInitialDelaySeconds();
-    if (Objects.nonNull(initialDelaySeconds)) {
-      builder.setInitialDelaySeconds(initialDelaySeconds);
+    if (Objects.nonNull(livenessProbe.getInitialDelaySeconds())) {
+      builder.setInitialDelaySeconds(livenessProbe.getInitialDelaySeconds());
     }
 
-    Integer timeoutSeconds = livenessProbe.getTimeoutSeconds();
-    if (Objects.nonNull(timeoutSeconds)) {
-      builder.setTimeoutSeconds(timeoutSeconds);
+    if (Objects.nonNull(livenessProbe.getTimeoutSeconds())) {
+      builder.setTimeoutSeconds(livenessProbe.getTimeoutSeconds());
     }
 
-    Integer periodSeconds = livenessProbe.getPeriodSeconds();
-    if (Objects.nonNull(periodSeconds)) {
-      builder.setPeriodSeconds(periodSeconds);
+    if (Objects.nonNull(livenessProbe.getPeriodSeconds())) {
+      builder.setPeriodSeconds(livenessProbe.getPeriodSeconds());
     }
 
-    Integer successThreshold = livenessProbe.getSuccessThreshold();
-    if (Objects.nonNull(successThreshold)) {
-      builder.setSuccessThreshold(successThreshold);
+    if (Objects.nonNull(livenessProbe.getSuccessThreshold())) {
+      builder.setSuccessThreshold(livenessProbe.getSuccessThreshold());
     }
 
-    Integer failureThreshold = livenessProbe.getFailureThreshold();
-    if (Objects.nonNull(failureThreshold)) {
-      builder.setFailureThreshold(failureThreshold);
+    if (Objects.nonNull(livenessProbe.getFailureThreshold())) {
+      builder.setFailureThreshold(livenessProbe.getFailureThreshold());
     }
 
-    Long terminationGracePeriodSeconds = livenessProbe.getTerminationGracePeriodSeconds();
-    if (Objects.nonNull(terminationGracePeriodSeconds)) {
-      builder.setTerminationGracePeriodSeconds(terminationGracePeriodSeconds);
+    if (Objects.nonNull(livenessProbe.getTerminationGracePeriodSeconds())) {
+      builder.setTerminationGracePeriodSeconds(livenessProbe.getTerminationGracePeriodSeconds());
     }
 
     return builder.build();
   }
 
-  private ExecAction mapExecAction(io.fabric8.kubernetes.api.model.ExecAction exec) {
-    return ExecAction.newBuilder()
-        .addAllCommand(exec.getCommand())
-        .build();
+  public ExecAction mapExecAction(io.fabric8.kubernetes.api.model.ExecAction exec) {
+    ExecAction.Builder builder = ExecAction.newBuilder();
+
+    if (Objects.nonNull(exec.getCommand())) {
+      builder.addAllCommand(exec.getCommand());
+    }
+
+    return builder.build();
   }
 
-  private ProbeHandler mapProbeHandler(io.fabric8.kubernetes.api.model.Probe livenessProbe) {
+  public ProbeHandler mapProbeHandler(io.fabric8.kubernetes.api.model.Probe livenessProbe) {
     ProbeHandler.Builder builder = ProbeHandler.newBuilder();
 
-    io.fabric8.kubernetes.api.model.ExecAction exec = livenessProbe.getExec();
-    if (Objects.nonNull(exec)) {
-      builder.setExec(mapExecAction(exec));
+    if (Objects.nonNull(livenessProbe.getExec())) {
+      builder.setExec(mapExecAction(livenessProbe.getExec()));
     }
 
-    io.fabric8.kubernetes.api.model.HTTPGetAction httpGet = livenessProbe.getHttpGet();
-    if (Objects.nonNull(httpGet)) {
-      builder.setHttpGet(mapHttpGetAction(httpGet));
+    if (Objects.nonNull(livenessProbe.getHttpGet())) {
+      builder.setHttpGet(mapHttpGetAction(livenessProbe.getHttpGet()));
     }
 
-    io.fabric8.kubernetes.api.model.TCPSocketAction tcpSocket = livenessProbe.getTcpSocket();
-    if (Objects.nonNull(tcpSocket)) {
-      builder.setTcpSocket(mapTCPSocketAction(tcpSocket));
+    if (Objects.nonNull(livenessProbe.getTcpSocket())) {
+      builder.setTcpSocket(mapTCPSocketAction(livenessProbe.getTcpSocket()));
     }
 
-    io.fabric8.kubernetes.api.model.GRPCAction grpc = livenessProbe.getGrpc();
-    if (Objects.nonNull(grpc)) {
-      builder.setGrpc(mapGRPCAction(grpc));
+    if (Objects.nonNull(livenessProbe.getGrpc())) {
+      builder.setGrpc(mapGRPCAction(livenessProbe.getGrpc()));
     }
 
     return builder.build();
   }
 
-  private GRPCAction mapGRPCAction(io.fabric8.kubernetes.api.model.GRPCAction grpc) {
+  public GRPCAction mapGRPCAction(io.fabric8.kubernetes.api.model.GRPCAction grpc) {
     GRPCAction.Builder builder = GRPCAction.newBuilder();
 
-    Integer port = grpc.getPort();
-    if (Objects.nonNull(port)) {
-      builder.setPort(port);
+    if (Objects.nonNull(grpc.getPort())) {
+      builder.setPort(grpc.getPort());
     }
 
-    String service = grpc.getService();
-    if (Objects.nonNull(service)) {
-      builder.setService(service);
+    if (Objects.nonNull(grpc.getService())) {
+      builder.setService(grpc.getService());
     }
 
     return builder.build();
   }
 
-  private TCPSocketAction mapTCPSocketAction(
+  public TCPSocketAction mapTCPSocketAction(
       io.fabric8.kubernetes.api.model.TCPSocketAction tcpSocket) {
     TCPSocketAction.Builder builder = TCPSocketAction.newBuilder();
 
-    io.fabric8.kubernetes.api.model.IntOrString port = tcpSocket.getPort();
-    if (Objects.nonNull(port)) {
-      builder.setPort(mapIntOrString(port));
+    if (Objects.nonNull(tcpSocket.getPort())) {
+      builder.setPort(mapIntOrString(tcpSocket.getPort()));
     }
 
-    String host = tcpSocket.getHost();
-    if (Objects.nonNull(host)) {
-      builder.setHost(host);
+    if (Objects.nonNull(tcpSocket.getHost())) {
+      builder.setHost(tcpSocket.getHost());
     }
 
     return builder.build();
   }
 
-  private HTTPGetAction mapHttpGetAction(io.fabric8.kubernetes.api.model.HTTPGetAction httpGet) {
+  public HTTPGetAction mapHttpGetAction(io.fabric8.kubernetes.api.model.HTTPGetAction httpGet) {
     HTTPGetAction.Builder builder = HTTPGetAction.newBuilder();
 
-    String path = httpGet.getPath();
-    if (Objects.nonNull(path)) {
-      builder.setPath(path);
+    if (Objects.nonNull(httpGet.getPath())) {
+      builder.setPath(httpGet.getPath());
     }
 
-    io.fabric8.kubernetes.api.model.IntOrString port = httpGet.getPort();
-    if (Objects.nonNull(port)) {
-      builder.setPort(mapIntOrString(port));
+    if (Objects.nonNull(httpGet.getPort())) {
+      builder.setPort(mapIntOrString(httpGet.getPort()));
     }
 
-    String host = httpGet.getHost();
-    if (Objects.nonNull(host)) {
-      builder.setHost(host);
+    if (Objects.nonNull(httpGet.getHost())) {
+      builder.setHost(httpGet.getHost());
     }
 
-    String scheme = httpGet.getScheme();
-    if (Objects.nonNull(scheme)) {
-      builder.setScheme(scheme);
+    if (Objects.nonNull(httpGet.getScheme())) {
+      builder.setScheme(httpGet.getScheme());
     }
 
-    List<io.fabric8.kubernetes.api.model.HTTPHeader> httpHeaders = httpGet.getHttpHeaders();
-    if (Objects.nonNull(httpHeaders) && !httpHeaders.isEmpty()) {
-      builder.addAllHttpHeaders(mapHttpHeaders(httpHeaders));
+    if (Objects.nonNull(httpGet.getHttpHeaders())) {
+      builder.addAllHttpHeaders(mapHttpHeaders(httpGet.getHttpHeaders()));
     }
 
     return builder.build();
   }
 
-  private Iterable<? extends HTTPHeader> mapHttpHeaders(
+  public Iterable<? extends HTTPHeader> mapHttpHeaders(
       List<io.fabric8.kubernetes.api.model.HTTPHeader> httpHeaders) {
     return httpHeaders.stream()
         .map(h -> {
           HTTPHeader.Builder builder = HTTPHeader.newBuilder();
 
-          String name = h.getName();
-          if (Objects.nonNull(name)) {
-            builder.setName(name);
+          if (Objects.nonNull(h.getName())) {
+            builder.setName(h.getName());
           }
 
-          String value = h.getValue();
-          if (Objects.nonNull(value)) {
-            builder.setValue(value);
+          if (Objects.nonNull(h.getValue())) {
+            builder.setValue(h.getValue());
           }
 
           return builder.build();
@@ -1142,36 +1405,32 @@ public class ArmadaMapper {
         .collect(Collectors.toList());
   }
 
-  private IntOrString mapIntOrString(io.fabric8.kubernetes.api.model.IntOrString port) {
+  public IntOrString mapIntOrString(io.fabric8.kubernetes.api.model.IntOrString port) {
     IntOrString.Builder builder = IntOrString.newBuilder();
 
-    Integer intVal = port.getIntVal();
-    if (Objects.nonNull(intVal)) {
-      builder.setIntVal(intVal);
+    if (Objects.nonNull(port.getIntVal())) {
+      builder.setIntVal(port.getIntVal());
     }
 
-    String strVal = port.getStrVal();
-    if (Objects.nonNull(strVal)) {
-      builder.setStrVal(strVal);
+    if (Objects.nonNull(port.getStrVal())) {
+      builder.setStrVal(port.getStrVal());
     }
 
     return builder.build();
   }
 
-  private Iterable<? extends VolumeDevice> mapVolumeDevices(
+  public Iterable<? extends VolumeDevice> mapVolumeDevices(
       List<io.fabric8.kubernetes.api.model.VolumeDevice> volumeDevices) {
     return volumeDevices.stream()
         .map(d -> {
           VolumeDevice.Builder builder = VolumeDevice.newBuilder();
 
-          String name = d.getName();
-          if (Objects.nonNull(name)) {
-            builder.setName(name);
+          if (Objects.nonNull(d.getName())) {
+            builder.setName(d.getName());
           }
 
-          String devicePath = d.getDevicePath();
-          if (Objects.nonNull(devicePath)) {
-            builder.setDevicePath(devicePath);
+          if (Objects.nonNull(d.getDevicePath())) {
+            builder.setDevicePath(d.getDevicePath());
           }
 
           return builder.build();
@@ -1179,7 +1438,7 @@ public class ArmadaMapper {
         .collect(Collectors.toList());
   }
 
-  private Iterable<? extends VolumeMount> mapVolumeMounts(
+  public Iterable<? extends VolumeMount> mapVolumeMounts(
       List<io.fabric8.kubernetes.api.model.VolumeMount> volumeMounts) {
     // FIXME mismatch
     // .setRecursiveReadOnly()
@@ -1187,34 +1446,28 @@ public class ArmadaMapper {
         .map(m -> {
           VolumeMount.Builder builder = VolumeMount.newBuilder();
 
-          String name = m.getName();
-          if (Objects.nonNull(name)) {
-            builder.setName(name);
+          if (Objects.nonNull(m.getName())) {
+            builder.setName(m.getName());
           }
 
-          Boolean readOnly = m.getReadOnly();
-          if (Objects.nonNull(readOnly)) {
-            builder.setReadOnly(readOnly);
+          if (Objects.nonNull(m.getReadOnly())) {
+            builder.setReadOnly(m.getReadOnly());
           }
 
-          String mountPath = m.getMountPath();
-          if (Objects.nonNull(mountPath)) {
-            builder.setMountPath(mountPath);
+          if (Objects.nonNull(m.getMountPath())) {
+            builder.setMountPath(m.getMountPath());
           }
 
-          String subPath = m.getSubPath();
-          if (Objects.nonNull(subPath)) {
-            builder.setSubPath(subPath);
+          if (Objects.nonNull(m.getSubPath())) {
+            builder.setSubPath(m.getSubPath());
           }
 
-          String mountPropagation = m.getMountPropagation();
-          if (Objects.nonNull(mountPropagation)) {
-            builder.setMountPropagation(mountPropagation);
+          if (Objects.nonNull(m.getMountPropagation())) {
+            builder.setMountPropagation(m.getMountPropagation());
           }
 
-          String subPathExpr = m.getSubPathExpr();
-          if (Objects.nonNull(subPathExpr)) {
-            builder.setSubPathExpr(subPathExpr);
+          if (Objects.nonNull(m.getSubPathExpr())) {
+            builder.setSubPathExpr(m.getSubPathExpr());
           }
 
           return builder.build();
@@ -1222,40 +1475,46 @@ public class ArmadaMapper {
         .collect(Collectors.toList());
   }
 
-  private Iterable<? extends ContainerResizePolicy> mapContainerResizePolicy(
+  public Iterable<? extends ContainerResizePolicy> mapContainerResizePolicy(
       List<io.fabric8.kubernetes.api.model.ContainerResizePolicy> resizePolicy) {
     return resizePolicy.stream()
-        .map(p -> ContainerResizePolicy.newBuilder()
-            .setResourceName(p.getResourceName())
-            .setRestartPolicy(p.getRestartPolicy())
-            .build())
+        .map(p -> {
+          ContainerResizePolicy.Builder builder = ContainerResizePolicy.newBuilder();
+
+          if (Objects.nonNull(p.getResourceName())) {
+            builder.setResourceName(p.getResourceName());
+          }
+
+          if (Objects.nonNull(p.getRestartPolicy())) {
+            builder.setRestartPolicy(p.getRestartPolicy());
+          }
+
+          return builder.build();
+        })
         .collect(Collectors.toList());
   }
 
-  private ResourceRequirements mapResourceRequirements(
+  public ResourceRequirements mapResourceRequirements(
       io.fabric8.kubernetes.api.model.ResourceRequirements resources) {
     ResourceRequirements.Builder builder = ResourceRequirements.newBuilder();
 
-    Map<String, io.fabric8.kubernetes.api.model.Quantity> limits = resources.getLimits();
-    if (Objects.nonNull(limits)) {
-      builder.putAllLimits(mapResourceLimits(limits));
+    if (Objects.nonNull(resources.getLimits())) {
+      builder.putAllLimits(mapResourceLimits(resources.getLimits()));
     }
 
-    Map<String, io.fabric8.kubernetes.api.model.Quantity> requests = resources.getRequests();
-    if (Objects.nonNull(requests)) {
-      builder.putAllRequests(mapResourceRequests(requests));
+    if (Objects.nonNull(resources.getRequests())) {
+      builder.putAllRequests(mapResourceRequests(resources.getRequests()));
     }
 
     return builder.build();
   }
 
-  private Quantity mapQuantity(io.fabric8.kubernetes.api.model.Quantity quantity) {
+  public Quantity mapQuantity(io.fabric8.kubernetes.api.model.Quantity quantity) {
     Quantity.Builder builder = Quantity.newBuilder();
 
-    String amount = quantity.getAmount();
-    if (Objects.nonNull(amount)) {
+    if (Objects.nonNull(quantity.getAmount())) {
       StringBuilder sb = new StringBuilder();
-      sb.append(amount);
+      sb.append(quantity.getAmount());
 
       if (Objects.nonNull(quantity.getFormat())) {
         sb.append(quantity.getFormat());
@@ -1267,39 +1526,31 @@ public class ArmadaMapper {
     return builder.build();
   }
 
-  private Map<String, Quantity> mapResourceRequests(
+  public Map<String, Quantity> mapResourceRequests(
       Map<String, io.fabric8.kubernetes.api.model.Quantity> requests) {
-    if (requests.isEmpty()) {
-      return Collections.emptyMap();
-    }
 
     return requests.entrySet().stream()
         .collect(Collectors.toMap(Map.Entry::getKey, e -> mapQuantity(e.getValue())));
   }
 
-  private Map<String, Quantity> mapResourceLimits(
+  public Map<String, Quantity> mapResourceLimits(
       Map<String, io.fabric8.kubernetes.api.model.Quantity> limits) {
-    if (limits.isEmpty()) {
-      return Collections.emptyMap();
-    }
 
     return limits.entrySet().stream()
         .collect(Collectors.toMap(Map.Entry::getKey, e -> mapQuantity(e.getValue())));
   }
 
-  private Iterable<? extends EnvFromSource> mapEnvFromSource(
+  public Iterable<? extends EnvFromSource> mapEnvFromSource(
       List<io.fabric8.kubernetes.api.model.EnvFromSource> envFrom) {
     return envFrom.stream()
         .map(e -> {
           EnvFromSource.Builder builder = EnvFromSource.newBuilder();
 
-          io.fabric8.kubernetes.api.model.ConfigMapEnvSource configMapRef = e.getConfigMapRef();
-          if (Objects.nonNull(configMapRef)) {
-            builder.setConfigMapRef(mapConfigMapEnvSource(configMapRef));
+          if (Objects.nonNull(e.getConfigMapRef())) {
+            builder.setConfigMapRef(mapConfigMapEnvSource(e.getConfigMapRef()));
           }
 
-          io.fabric8.kubernetes.api.model.SecretEnvSource secretRef = e.getSecretRef();
-          if (Objects.nonNull(secretRef)) {
+          if (Objects.nonNull(e.getSecretRef())) {
             builder.setSecretRef(mapSecretEnvSource(e.getSecretRef()));
           }
 
@@ -1308,40 +1559,52 @@ public class ArmadaMapper {
         .collect(Collectors.toList());
   }
 
-  private SecretEnvSource mapSecretEnvSource(
+  public SecretEnvSource mapSecretEnvSource(
       io.fabric8.kubernetes.api.model.SecretEnvSource secretRef) {
-    return SecretEnvSource.newBuilder()
-        .setLocalObjectReference(mapLocalObjectReference(secretRef.getName()))
-        .setOptional(secretRef.getOptional())
-        .build();
+    SecretEnvSource.Builder builder = SecretEnvSource.newBuilder();
+
+    if (Objects.nonNull(secretRef.getName())) {
+      builder.setLocalObjectReference(mapLocalObjectReference(secretRef.getName()));
+    }
+
+    if (Objects.nonNull(secretRef.getOptional())) {
+      builder.setOptional(secretRef.getOptional());
+    }
+
+    return builder.build();
   }
 
-  private ConfigMapEnvSource mapConfigMapEnvSource(
+  public ConfigMapEnvSource mapConfigMapEnvSource(
       io.fabric8.kubernetes.api.model.ConfigMapEnvSource configMapRef) {
-    return ConfigMapEnvSource.newBuilder()
-        .setLocalObjectReference(mapLocalObjectReference(configMapRef.getName()))
-        .setOptional(configMapRef.getOptional())
+    ConfigMapEnvSource.Builder builder = ConfigMapEnvSource.newBuilder();
+
+    if (Objects.nonNull(configMapRef.getName())) {
+      builder.setLocalObjectReference(mapLocalObjectReference(configMapRef.getName()));
+    }
+
+    if (Objects.nonNull(configMapRef.getOptional())) {
+      builder.setOptional(configMapRef.getOptional());
+    }
+
+    return builder
         .build();
   }
 
-  private Iterable<? extends EnvVar> mapEnvVars(List<io.fabric8.kubernetes.api.model.EnvVar> env) {
+  public Iterable<? extends EnvVar> mapEnvVars(List<io.fabric8.kubernetes.api.model.EnvVar> env) {
     return env.stream()
         .map(e -> {
           EnvVar.Builder builder = EnvVar.newBuilder();
 
-          String name = e.getName();
-          if (Objects.nonNull(name)) {
-            builder.setName(name);
+          if (Objects.nonNull(e.getName())) {
+            builder.setName(e.getName());
           }
 
-          String value = e.getValue();
-          if (Objects.nonNull(value)) {
-            builder.setValue(value);
+          if (Objects.nonNull(e.getValue())) {
+            builder.setValue(e.getValue());
           }
 
-          io.fabric8.kubernetes.api.model.EnvVarSource valueFrom = e.getValueFrom();
-          if (Objects.nonNull(valueFrom)) {
-            builder.setValueFrom(mapEnvVarSource(valueFrom));
+          if (Objects.nonNull(e.getValueFrom())) {
+            builder.setValueFrom(mapEnvVarSource(e.getValueFrom()));
           }
 
           return builder.build();
@@ -1349,79 +1612,67 @@ public class ArmadaMapper {
         .collect(Collectors.toList());
   }
 
-  private EnvVarSource mapEnvVarSource(io.fabric8.kubernetes.api.model.EnvVarSource valueFrom) {
+  public EnvVarSource mapEnvVarSource(io.fabric8.kubernetes.api.model.EnvVarSource valueFrom) {
     EnvVarSource.Builder builder = EnvVarSource.newBuilder();
 
-    io.fabric8.kubernetes.api.model.ObjectFieldSelector fieldRef = valueFrom.getFieldRef();
-    if (Objects.nonNull(fieldRef)) {
-      builder.setFieldRef(mapObjectFieldSelector(fieldRef));
+    if (Objects.nonNull(valueFrom.getFieldRef())) {
+      builder.setFieldRef(mapObjectFieldSelector(valueFrom.getFieldRef()));
     }
 
-    io.fabric8.kubernetes.api.model.ResourceFieldSelector resourceFieldRef =
-        valueFrom.getResourceFieldRef();
-    if (Objects.nonNull(resourceFieldRef)) {
-      builder.setResourceFieldRef(mapResourceFieldSelector(resourceFieldRef));
+    if (Objects.nonNull(valueFrom.getResourceFieldRef())) {
+      builder.setResourceFieldRef(mapResourceFieldSelector(valueFrom.getResourceFieldRef()));
     }
 
-    io.fabric8.kubernetes.api.model.ConfigMapKeySelector configMapKeyRef =
-        valueFrom.getConfigMapKeyRef();
-    if (Objects.nonNull(configMapKeyRef)) {
-      builder.setConfigMapKeyRef(mapConfigMapKeySelector(configMapKeyRef));
+    if (Objects.nonNull(valueFrom.getConfigMapKeyRef())) {
+      builder.setConfigMapKeyRef(mapConfigMapKeySelector(valueFrom.getConfigMapKeyRef()));
     }
 
-    io.fabric8.kubernetes.api.model.SecretKeySelector secretKeyRef = valueFrom.getSecretKeyRef();
-    if (Objects.nonNull(secretKeyRef)) {
-      builder.setSecretKeyRef(mapSecretKeySelector(secretKeyRef));
+    if (Objects.nonNull(valueFrom.getSecretKeyRef())) {
+      builder.setSecretKeyRef(mapSecretKeySelector(valueFrom.getSecretKeyRef()));
     }
 
     return builder.build();
   }
 
-  private SecretKeySelector mapSecretKeySelector(
+  public SecretKeySelector mapSecretKeySelector(
       io.fabric8.kubernetes.api.model.SecretKeySelector secretKeyRef) {
     SecretKeySelector.Builder builder = SecretKeySelector.newBuilder();
 
-    String name = secretKeyRef.getName();
-    if (Objects.nonNull(name)) {
-      builder.setLocalObjectReference(mapLocalObjectReference(name));
+    if (Objects.nonNull(secretKeyRef.getName())) {
+      builder.setLocalObjectReference(mapLocalObjectReference(secretKeyRef.getName()));
     }
 
-    String key = secretKeyRef.getKey();
-    if (Objects.nonNull(key)) {
-      builder.setKey(key);
+    if (Objects.nonNull(secretKeyRef.getKey())) {
+      builder.setKey(secretKeyRef.getKey());
     }
 
-    Boolean optional = secretKeyRef.getOptional();
-    if (Objects.nonNull(optional)) {
-      builder.setOptional(optional);
+    if (Objects.nonNull(secretKeyRef.getOptional())) {
+      builder.setOptional(secretKeyRef.getOptional());
     }
 
     return builder.build();
   }
 
-  private ConfigMapKeySelector mapConfigMapKeySelector(
+  public ConfigMapKeySelector mapConfigMapKeySelector(
       io.fabric8.kubernetes.api.model.ConfigMapKeySelector configMapKeyRef) {
     ConfigMapKeySelector.Builder builder = ConfigMapKeySelector.newBuilder();
 
-    String name = configMapKeyRef.getName();
-    if (Objects.nonNull(name)) {
-      builder.setLocalObjectReference(mapLocalObjectReference(name));
+    if (Objects.nonNull(configMapKeyRef.getName())) {
+      builder.setLocalObjectReference(mapLocalObjectReference(configMapKeyRef.getName()));
     }
 
-    String key = configMapKeyRef.getKey();
-    if (Objects.nonNull(key)) {
-      builder.setKey(key);
+    if (Objects.nonNull(configMapKeyRef.getKey())) {
+      builder.setKey(configMapKeyRef.getKey());
     }
 
-    Boolean optional = configMapKeyRef.getOptional();
-    if (Objects.nonNull(optional)) {
-      builder.setOptional(optional);
+    if (Objects.nonNull(configMapKeyRef.getOptional())) {
+      builder.setOptional(configMapKeyRef.getOptional());
     }
 
     return builder.build();
   }
 
-  private LocalObjectReference mapLocalObjectReference(String name) {
+  public LocalObjectReference mapLocalObjectReference(String name) {
     LocalObjectReference.Builder builder = LocalObjectReference.newBuilder();
 
     if (Objects.nonNull(name)) {
@@ -1431,83 +1682,99 @@ public class ArmadaMapper {
     return builder.build();
   }
 
-  private ResourceFieldSelector mapResourceFieldSelector(
+  public ResourceFieldSelector mapResourceFieldSelector(
       io.fabric8.kubernetes.api.model.ResourceFieldSelector resourceFieldRef) {
     ResourceFieldSelector.Builder builder = ResourceFieldSelector.newBuilder();
 
-    String containerName = resourceFieldRef.getContainerName();
-    if (Objects.nonNull(containerName)) {
-      builder.setContainerName(containerName);
+    if (Objects.nonNull(resourceFieldRef.getContainerName())) {
+      builder.setContainerName(resourceFieldRef.getContainerName());
     }
 
-    String resource = resourceFieldRef.getResource();
-    if (Objects.nonNull(resource)) {
-      builder.setResource(resource);
+    if (Objects.nonNull(resourceFieldRef.getResource())) {
+      builder.setResource(resourceFieldRef.getResource());
     }
 
-    io.fabric8.kubernetes.api.model.Quantity divisor = resourceFieldRef.getDivisor();
-    if (Objects.nonNull(divisor)) {
-      builder.setDivisor(mapQuantity(divisor));
+    if (Objects.nonNull(resourceFieldRef.getDivisor())) {
+      builder.setDivisor(mapQuantity(resourceFieldRef.getDivisor()));
     }
 
     return builder.build();
   }
 
-  private ObjectFieldSelector mapObjectFieldSelector(
+  public ObjectFieldSelector mapObjectFieldSelector(
       io.fabric8.kubernetes.api.model.ObjectFieldSelector fieldRef) {
     ObjectFieldSelector.Builder builder = ObjectFieldSelector.newBuilder();
 
-    String apiVersion = fieldRef.getApiVersion();
-    if (Objects.nonNull(apiVersion)) {
-      builder.setApiVersion(apiVersion);
+    if (Objects.nonNull(fieldRef.getApiVersion())) {
+      builder.setApiVersion(fieldRef.getApiVersion());
     }
 
-    String fieldPath = fieldRef.getFieldPath();
-    if (Objects.nonNull(fieldPath)) {
-      builder.setFieldPath(fieldPath);
+    if (Objects.nonNull(fieldRef.getFieldPath())) {
+      builder.setFieldPath(fieldRef.getFieldPath());
     }
 
     return builder.build();
   }
 
-  private Iterable<? extends ContainerPort> mapContainerPorts(
+  public Iterable<? extends ContainerPort> mapContainerPorts(
       List<io.fabric8.kubernetes.api.model.ContainerPort> ports) {
     return ports.stream()
-        .map(p -> ContainerPort.newBuilder()
-            .setName(p.getName())
-            .setHostPort(p.getHostPort())
-            .setContainerPort(p.getContainerPort())
-            .setProtocol(p.getProtocol())
-            .setHostIP(p.getHostIP())
-            .build())
+        .map(p -> {
+          ContainerPort.Builder builder = ContainerPort.newBuilder();
+
+          if (Objects.nonNull(p.getName())) {
+            builder.setName(p.getName());
+          }
+
+          if (Objects.nonNull(p.getHostPort())) {
+            builder.setHostPort(p.getHostPort());
+          }
+
+          if (Objects.nonNull(p.getContainerPort())) {
+            builder.setContainerPort(p.getContainerPort());
+          }
+
+          if (Objects.nonNull(p.getProtocol())) {
+            builder.setProtocol(p.getProtocol());
+          }
+
+          if (Objects.nonNull(p.getHostIP())) {
+            builder.setHostIP(p.getHostIP());
+          }
+
+          return builder.build();
+        })
         .collect(Collectors.toList());
   }
 
-  private Iterable<? extends Volume> mapVolumes(
+  public Iterable<? extends Volume> mapVolumes(
       List<io.fabric8.kubernetes.api.model.Volume> volumes) {
     List<Volume> vols = new ArrayList<>();
 
     volumes.forEach(v -> {
-      Volume volume = Volume.newBuilder()
-          .setName(v.getName())
-          .setVolumeSource(mapVolumeSource(v))
-          .build();
-      vols.add(volume);
+      Volume.Builder builder = Volume.newBuilder();
+
+      if (Objects.nonNull(v.getName())) {
+      builder.setName(v.getName());
+      }
+
+      builder.setVolumeSource(mapVolumeSource(v));
+
+      vols.add(builder.build());
     });
 
     return vols;
   }
 
-  private VolumeSource mapVolumeSource(io.fabric8.kubernetes.api.model.Volume volume) {
+  public VolumeSource mapVolumeSource(io.fabric8.kubernetes.api.model.Volume volume) {
     VolumeSource.Builder builder = VolumeSource.newBuilder();
 
-    io.fabric8.kubernetes.api.model.EmptyDirVolumeSource emptyDir = volume.getEmptyDir();
-    if (Objects.nonNull(emptyDir)) {
-      builder.setEmptyDir(mapEmptyDirVolumeSource(emptyDir));
+    if (Objects.nonNull(volume.getEmptyDir())) {
+      builder.setEmptyDir(mapEmptyDirVolumeSource(volume.getEmptyDir()));
     }
 
     if (Objects.nonNull(volume.getSecret())) {
-      builder.setSecret(mapSecretVolumeSource(volume));
+      builder.setSecret(mapSecretVolumeSource(volume.getSecret()));
     }
 
 //    builder
@@ -1527,8 +1794,8 @@ public class ArmadaMapper {
     return builder.build();
   }
 
-  @SuppressFBWarnings("UPM_UNCALLED_PRIVATE_METHOD")
-  private FlexVolumeSource mapFlexVolume(io.fabric8.kubernetes.api.model.Volume volume) {
+  @SuppressFBWarnings("UPM_UNCALLED_public_METHOD")
+  public FlexVolumeSource mapFlexVolume(io.fabric8.kubernetes.api.model.Volume volume) {
     return FlexVolumeSource.newBuilder()
         .setDriver(volume.getFlexVolume().getDriver())
         .setFsType(volume.getFlexVolume().getFsType())
@@ -1538,8 +1805,8 @@ public class ArmadaMapper {
         .build();
   }
 
-  @SuppressFBWarnings("UPM_UNCALLED_PRIVATE_METHOD")
-  private RBDVolumeSource mapRbdVolumeSource(io.fabric8.kubernetes.api.model.Volume volume) {
+  @SuppressFBWarnings("UPM_UNCALLED_public_METHOD")
+  public RBDVolumeSource mapRbdVolumeSource(io.fabric8.kubernetes.api.model.Volume volume) {
     return RBDVolumeSource.newBuilder()
         // FIXME
         // .setMonitors(volume.getRbd().getMonitors()) type mismatch
@@ -1553,8 +1820,8 @@ public class ArmadaMapper {
         .build();
   }
 
-  @SuppressFBWarnings("UPM_UNCALLED_PRIVATE_METHOD")
-  private PersistentVolumeClaimVolumeSource mapPersistentVolumeClaim(
+  @SuppressFBWarnings("UPM_UNCALLED_public_METHOD")
+  public PersistentVolumeClaimVolumeSource mapPersistentVolumeClaim(
       io.fabric8.kubernetes.api.model.Volume volume) {
     return PersistentVolumeClaimVolumeSource.newBuilder()
         .setClaimName(volume.getPersistentVolumeClaim().getClaimName())
@@ -1562,8 +1829,8 @@ public class ArmadaMapper {
         .build();
   }
 
-  @SuppressFBWarnings("UPM_UNCALLED_PRIVATE_METHOD")
-  private GlusterfsVolumeSource mapGlueterfs(io.fabric8.kubernetes.api.model.Volume volume) {
+  @SuppressFBWarnings("UPM_UNCALLED_public_METHOD")
+  public GlusterfsVolumeSource mapGlueterfs(io.fabric8.kubernetes.api.model.Volume volume) {
     return GlusterfsVolumeSource.newBuilder()
         .setEndpoints(volume.getGlusterfs().getEndpoints())
         .setPath(volume.getGlusterfs().getPath())
@@ -1571,8 +1838,8 @@ public class ArmadaMapper {
         .build();
   }
 
-  @SuppressFBWarnings("UPM_UNCALLED_PRIVATE_METHOD")
-  private ISCSIVolumeSource mapIscsiVolumeSource(io.fabric8.kubernetes.api.model.Volume volume) {
+  @SuppressFBWarnings("UPM_UNCALLED_public_METHOD")
+  public ISCSIVolumeSource mapIscsiVolumeSource(io.fabric8.kubernetes.api.model.Volume volume) {
     return ISCSIVolumeSource.newBuilder()
         .setTargetPortal(volume.getIscsi().getTargetPortal())
         .setIqn(volume.getIscsi().getIqn())
@@ -1588,15 +1855,19 @@ public class ArmadaMapper {
         .build();
   }
 
-  private LocalObjectReference mapLocalObjectReference(
+  public LocalObjectReference mapLocalObjectReference(
       io.fabric8.kubernetes.api.model.LocalObjectReference secretRef) {
-    return LocalObjectReference.newBuilder()
-        .setName(secretRef.getName())
-        .build();
+    LocalObjectReference.Builder builder = LocalObjectReference.newBuilder();
+
+    if (Objects.nonNull(secretRef.getName())) {
+      builder.setName(secretRef.getName());
+    }
+
+    return builder.build();
   }
 
-  @SuppressFBWarnings("UPM_UNCALLED_PRIVATE_METHOD")
-  private NFSVolumeSource mapNfsVolumeSource(io.fabric8.kubernetes.api.model.Volume volume) {
+  @SuppressFBWarnings("UPM_UNCALLED_public_METHOD")
+  public NFSVolumeSource mapNfsVolumeSource(io.fabric8.kubernetes.api.model.Volume volume) {
     return NFSVolumeSource.newBuilder()
         .setServer(volume.getNfs().getServer())
         .setPath(volume.getNfs().getPath())
@@ -1604,27 +1875,54 @@ public class ArmadaMapper {
         .build();
   }
 
-  private SecretVolumeSource mapSecretVolumeSource(io.fabric8.kubernetes.api.model.Volume volume) {
-    return SecretVolumeSource.newBuilder()
-        .setSecretName(volume.getSecret().getSecretName())
-        .addAllItems(mapKeyToPaths(volume.getSecret().getItems()))
-        .setDefaultMode(volume.getSecret().getDefaultMode())
-        .setOptional(volume.getSecret().getOptional())
-        .build();
+  public SecretVolumeSource mapSecretVolumeSource(
+      io.fabric8.kubernetes.api.model.SecretVolumeSource secretVolumeSource) {
+    SecretVolumeSource.Builder builder = SecretVolumeSource.newBuilder();
+
+    if (Objects.nonNull(secretVolumeSource.getSecretName())) {
+      builder.setSecretName(secretVolumeSource.getSecretName());
+    }
+
+    if (Objects.nonNull(secretVolumeSource.getItems())) {
+      builder.addAllItems(mapKeyToPaths(secretVolumeSource.getItems()));
+    }
+
+    if (Objects.nonNull(secretVolumeSource.getDefaultMode())) {
+      builder.setDefaultMode(secretVolumeSource.getDefaultMode());
+    }
+
+    if (Objects.nonNull(secretVolumeSource.getOptional())) {
+      builder.setOptional(secretVolumeSource.getOptional());
+    }
+
+    return builder.build();
   }
 
-  private Iterable<? extends KeyToPath> mapKeyToPaths(
+  public Iterable<? extends KeyToPath> mapKeyToPaths(
       List<io.fabric8.kubernetes.api.model.KeyToPath> items) {
     return items.stream()
-        .map(i -> KeyToPath.newBuilder()
-            .setKey(i.getKey())
-            .setPath(i.getPath())
-            .build())
+        .map(i -> {
+          KeyToPath.Builder builder = KeyToPath.newBuilder();
+
+          if (Objects.nonNull(i.getKey())) {
+              builder.setKey(i.getKey());
+          }
+
+          if (Objects.nonNull(i.getPath())) {
+              builder.setPath(i.getPath());
+          }
+
+          if (Objects.nonNull(i.getMode())) {
+              builder.setMode(i.getMode());
+          }
+
+          return builder.build();
+        })
         .collect(Collectors.toList());
   }
 
-  @SuppressFBWarnings("UPM_UNCALLED_PRIVATE_METHOD")
-  private GitRepoVolumeSource mapGitRepoVolumeSource(
+  @SuppressFBWarnings("UPM_UNCALLED_public_METHOD")
+  public GitRepoVolumeSource mapGitRepoVolumeSource(
       io.fabric8.kubernetes.api.model.Volume volume) {
     return GitRepoVolumeSource.newBuilder()
         .setRepository(volume.getGitRepo().getRepository())
@@ -1633,8 +1931,8 @@ public class ArmadaMapper {
         .build();
   }
 
-  @SuppressFBWarnings("UPM_UNCALLED_PRIVATE_METHOD")
-  private AWSElasticBlockStoreVolumeSource mapAwsElasticBlockStoreVolumeSource(
+  @SuppressFBWarnings("UPM_UNCALLED_public_METHOD")
+  public AWSElasticBlockStoreVolumeSource mapAwsElasticBlockStoreVolumeSource(
       io.fabric8.kubernetes.api.model.Volume volume) {
     return AWSElasticBlockStoreVolumeSource.newBuilder()
         .setVolumeID(volume.getAwsElasticBlockStore().getVolumeID())
@@ -1644,8 +1942,8 @@ public class ArmadaMapper {
         .build();
   }
 
-  @SuppressFBWarnings("UPM_UNCALLED_PRIVATE_METHOD")
-  private GCEPersistentDiskVolumeSource mapGcePersistentDiskVolumeSource(
+  @SuppressFBWarnings("UPM_UNCALLED_public_METHOD")
+  public GCEPersistentDiskVolumeSource mapGcePersistentDiskVolumeSource(
       io.fabric8.kubernetes.api.model.Volume volume) {
     return GCEPersistentDiskVolumeSource.newBuilder()
         .setPdName(volume.getGcePersistentDisk().getPdName())
@@ -1655,22 +1953,23 @@ public class ArmadaMapper {
         .build();
   }
 
-  private EmptyDirVolumeSource mapEmptyDirVolumeSource(
+  public EmptyDirVolumeSource mapEmptyDirVolumeSource(
       io.fabric8.kubernetes.api.model.EmptyDirVolumeSource emptyDirVolumeSource) {
     EmptyDirVolumeSource.Builder builder = EmptyDirVolumeSource.newBuilder();
 
-    builder.setMedium(emptyDirVolumeSource.getMedium());
+    if (Objects.nonNull(emptyDirVolumeSource.getMedium())) {
+      builder.setMedium(emptyDirVolumeSource.getMedium());
+    }
 
-    io.fabric8.kubernetes.api.model.Quantity sizeLimit = emptyDirVolumeSource.getSizeLimit();
-    if (Objects.nonNull(sizeLimit)) {
-      builder.setSizeLimit(mapQuantity(sizeLimit));
+    if (Objects.nonNull(emptyDirVolumeSource.getSizeLimit())) {
+      builder.setSizeLimit(mapQuantity(emptyDirVolumeSource.getSizeLimit()));
     }
 
     return builder.build();
   }
 
-  @SuppressFBWarnings("UPM_UNCALLED_PRIVATE_METHOD")
-  private HostPathVolumeSource mapHostPathVolumeSource(
+  @SuppressFBWarnings("UPM_UNCALLED_public_METHOD")
+  public HostPathVolumeSource mapHostPathVolumeSource(
       io.fabric8.kubernetes.api.model.Volume volume) {
     if (volume.getHostPath() == null) {
       return HostPathVolumeSource.newBuilder().build();
