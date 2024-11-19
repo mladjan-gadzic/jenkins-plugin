@@ -122,6 +122,7 @@ public class KubernetesCloud extends Cloud implements PodTemplateGroup {
     private String armadaUrl;
     private String armadaPort;
     private String armadaQueue;
+    private String armadaNamespace;
     private String armadaCredentialsId;
 
     private String serverUrl;
@@ -303,6 +304,15 @@ public class KubernetesCloud extends Cloud implements PodTemplateGroup {
     @DataBoundSetter
     public void setArmadaQueue(String armadaQueue) {
         this.armadaQueue = armadaQueue;
+    }
+
+    public String getArmadaNamespace() {
+        return armadaNamespace;
+    }
+
+    @DataBoundSetter
+    public void setArmadaNamespace(String armadaNamespace) {
+        this.armadaNamespace = armadaNamespace;
     }
 
     public String getArmadaCredentialsId() {

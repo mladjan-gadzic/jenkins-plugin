@@ -165,8 +165,8 @@ public class KubernetesLauncher extends JNLPLauncher {
             if (existingPod == null) {
                 LOGGER.log(FINE, () -> "Creating Pod: " + cloudName + " " + namespace + "/" + podName);
                 try {
-                    ArmadaMapper armadaMapper =
-                        new ArmadaMapper(cloud.getArmadaQueue(), cloud.getArmadaQueue(), pod);
+                    ArmadaMapper armadaMapper = new ArmadaMapper(cloud.getArmadaQueue(),
+                        cloud.getArmadaNamespace(), cloud.getArmadaQueue(), pod);
 
                     armadaClient.submitJob(armadaMapper.createJobSubmitRequest());
                 } catch (KubernetesClientException e) {

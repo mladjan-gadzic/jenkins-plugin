@@ -36,9 +36,13 @@ THE SOFTWARE.
       <f:textbox default="example" clazz="required"/>
     </f:entry>
 
-  <f:entry title="${%Armada credentials}" field="armadaCredentialsId">
-    <c:select/>
-  </f:entry>
+    <f:entry title="${%Armada namespace}" field="armadaNamespace">
+      <f:textbox default="default" clazz="required"/>
+    </f:entry>
+
+    <f:entry title="${%Armada credentials}" field="armadaCredentialsId">
+      <c:select/>
+    </f:entry>
 
     <f:validateButton title="${%Test Armada Connection}" progress="${%Testing...}" method="testArmadaConnection" with="armadaUrl,armadaPort,armadaCredentialsId" />
 
