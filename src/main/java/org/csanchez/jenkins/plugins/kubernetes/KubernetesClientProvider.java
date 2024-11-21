@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
+import org.csanchez.jenkins.plugins.kubernetes.random.KubernetesCloud;
 import org.jenkinsci.plugins.kubernetes.auth.KubernetesAuthException;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -49,7 +50,7 @@ public class KubernetesClientProvider {
 
     private KubernetesClientProvider() {}
 
-    static KubernetesClient createClient(KubernetesCloud cloud) throws KubernetesAuthException, IOException {
+    public static KubernetesClient createClient(KubernetesCloud cloud) throws KubernetesAuthException, IOException {
         String displayName = cloud.getDisplayName();
         final Client c = clients.getIfPresent(displayName);
         if (c == null) {

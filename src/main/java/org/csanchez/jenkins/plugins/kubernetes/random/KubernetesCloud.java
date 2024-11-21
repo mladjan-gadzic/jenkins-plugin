@@ -1,4 +1,4 @@
-package org.csanchez.jenkins.plugins.kubernetes;
+package org.csanchez.jenkins.plugins.kubernetes.random;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.lang.StringUtils.isEmpty;
@@ -69,6 +69,20 @@ import jenkins.util.SystemProperties;
 import jenkins.websocket.WebSockets;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
+import org.csanchez.jenkins.plugins.kubernetes.GarbageCollection;
+import org.csanchez.jenkins.plugins.kubernetes.InProvisioning;
+import org.csanchez.jenkins.plugins.kubernetes.KubernetesClientProvider;
+import org.csanchez.jenkins.plugins.kubernetes.KubernetesFactoryAdapter;
+import org.csanchez.jenkins.plugins.kubernetes.LimitRegistrationResults;
+import org.csanchez.jenkins.plugins.kubernetes.Messages;
+import org.csanchez.jenkins.plugins.kubernetes.MetricNames;
+import org.csanchez.jenkins.plugins.kubernetes.PlannedNodeBuilderFactory;
+import org.csanchez.jenkins.plugins.kubernetes.PodLabel;
+import org.csanchez.jenkins.plugins.kubernetes.PodTemplate;
+import org.csanchez.jenkins.plugins.kubernetes.PodTemplateFilter;
+import org.csanchez.jenkins.plugins.kubernetes.PodTemplateGroup;
+import org.csanchez.jenkins.plugins.kubernetes.PodTemplateSource;
+import org.csanchez.jenkins.plugins.kubernetes.PodTemplateUtils;
 import org.csanchez.jenkins.plugins.kubernetes.pipeline.PodTemplateMap;
 import org.csanchez.jenkins.plugins.kubernetes.pod.retention.Default;
 import org.csanchez.jenkins.plugins.kubernetes.pod.retention.PodRetention;
@@ -574,7 +588,7 @@ public class KubernetesCloud extends Cloud implements PodTemplateGroup {
      * Map of labels to add to all pods started by the plugin
      * @return immutable map of pod labels
      */
-    Map<String, String> getPodLabelsMap() {
+    public Map<String, String> getPodLabelsMap() {
         return PodLabel.toMap(getPodLabels());
     }
 
@@ -1005,7 +1019,7 @@ public class KubernetesCloud extends Cloud implements PodTemplateGroup {
     public static class DescriptorImpl extends Descriptor<Cloud> {
         @Override
         public String getDisplayName() {
-            return "Kubernetes";
+            return "Armada";
         }
 
         @Initializer(before = InitMilestone.PLUGINS_STARTED)

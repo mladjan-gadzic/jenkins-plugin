@@ -4,7 +4,7 @@ import hudson.Extension;
 import io.fabric8.kubernetes.api.model.Pod;
 import java.io.Serializable;
 import java.util.function.Supplier;
-import org.csanchez.jenkins.plugins.kubernetes.KubernetesCloud;
+import org.csanchez.jenkins.plugins.kubernetes.random.KubernetesCloud;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 

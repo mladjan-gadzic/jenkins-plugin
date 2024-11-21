@@ -27,6 +27,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.function.Consumer;
 import org.csanchez.jenkins.plugins.kubernetes.pod.retention.Always;
+import org.csanchez.jenkins.plugins.kubernetes.random.KubernetesCloud;
 import org.junit.Assert;
 import org.junit.Test;
 

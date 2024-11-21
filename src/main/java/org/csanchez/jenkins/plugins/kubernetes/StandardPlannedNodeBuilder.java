@@ -5,6 +5,7 @@ import hudson.model.Descriptor;
 import hudson.slaves.NodeProvisioner;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
+import org.csanchez.jenkins.plugins.kubernetes.random.KubernetesCloud;
 
 /**
  * The default {@link PlannedNodeBuilder} implementation, in case there is other registered.

@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.notNullValue;
 
 import com.cloudbees.hudson.plugins.folder.Folder;
 import java.util.Collections;
+import org.csanchez.jenkins.plugins.kubernetes.random.KubernetesCloud;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;

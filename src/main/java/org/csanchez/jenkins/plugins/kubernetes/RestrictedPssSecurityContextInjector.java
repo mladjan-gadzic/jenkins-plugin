@@ -9,6 +9,7 @@ import io.fabric8.kubernetes.api.model.SecurityContext;
 import java.util.List;
 import java.util.logging.Logger;
 import org.csanchez.jenkins.plugins.kubernetes.pod.decorator.PodDecorator;
+import org.csanchez.jenkins.plugins.kubernetes.random.KubernetesCloud;
 
 /**
  * <p>

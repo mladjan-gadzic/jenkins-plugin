@@ -5,6 +5,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.Label;
 import hudson.model.Node;
+import org.csanchez.jenkins.plugins.kubernetes.random.KubernetesCloud;
 
 /**
  * Implementation of {@link PodTemplateFilter} filtering pod templates matching the right label.

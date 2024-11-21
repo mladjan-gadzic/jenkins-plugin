@@ -13,6 +13,7 @@ import jenkins.metrics.api.Metrics;
 import jenkins.model.Jenkins;
 import jenkins.model.NodeListener;
 import net.jcip.annotations.GuardedBy;
+import org.csanchez.jenkins.plugins.kubernetes.random.KubernetesCloud;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 

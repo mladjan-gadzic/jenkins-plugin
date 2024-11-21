@@ -4,7 +4,7 @@ import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
 import io.fabric8.kubernetes.api.model.Pod;
 import java.util.function.Supplier;
-import org.csanchez.jenkins.plugins.kubernetes.KubernetesCloud;
+import org.csanchez.jenkins.plugins.kubernetes.random.KubernetesCloud;
 
 /**
  * <code>PodRetention</code> instances determine if the Kubernetes pod running a Jenkins agent

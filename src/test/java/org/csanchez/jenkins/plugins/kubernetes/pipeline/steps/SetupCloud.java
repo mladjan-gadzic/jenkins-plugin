@@ -5,7 +5,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import jenkins.model.JenkinsLocationConfiguration;
 import org.apache.commons.lang3.StringUtils;
-import org.csanchez.jenkins.plugins.kubernetes.KubernetesCloud;
+import org.csanchez.jenkins.plugins.kubernetes.random.KubernetesCloud;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.RealJenkinsRule;
 

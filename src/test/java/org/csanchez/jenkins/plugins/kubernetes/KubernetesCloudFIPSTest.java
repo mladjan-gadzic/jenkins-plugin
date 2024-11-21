@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Paths;
 import jenkins.security.FIPS140;
+import org.csanchez.jenkins.plugins.kubernetes.random.KubernetesCloud;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;

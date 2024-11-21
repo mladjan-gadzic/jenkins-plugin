@@ -2,6 +2,7 @@ package org.csanchez.jenkins.plugins.kubernetes;
 
 import hudson.model.Label;
 import hudson.slaves.NodeProvisioner;
+import org.csanchez.jenkins.plugins.kubernetes.random.KubernetesCloud;
 
 /**
  * A builder of {@link hudson.slaves.NodeProvisioner.PlannedNode} implementations for Kubernetes.

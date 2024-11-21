@@ -7,6 +7,7 @@ import hudson.model.Queue;
 import hudson.model.Queue.Task;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.model.queue.QueueTaskDispatcher;
+import org.csanchez.jenkins.plugins.kubernetes.random.KubernetesCloud;
 
 @Extension
 @SuppressWarnings({"rawtypes"})

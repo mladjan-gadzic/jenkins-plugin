@@ -28,7 +28,7 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
-import org.csanchez.jenkins.plugins.kubernetes.KubernetesCloud;
+import org.csanchez.jenkins.plugins.kubernetes.random.KubernetesCloud;
 import org.csanchez.jenkins.plugins.kubernetes.KubernetesSlave;
 import org.csanchez.jenkins.plugins.kubernetes.pod.retention.Reaper;
 import org.jenkinsci.Symbol;

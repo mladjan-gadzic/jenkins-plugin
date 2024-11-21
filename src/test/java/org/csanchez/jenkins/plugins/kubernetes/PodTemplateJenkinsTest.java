@@ -12,6 +12,7 @@ import java.security.MessageDigest;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.csanchez.jenkins.plugins.kubernetes.random.KubernetesCloud;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;

@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import org.csanchez.jenkins.plugins.kubernetes.pipeline.PodTemplateMap;
+import org.csanchez.jenkins.plugins.kubernetes.random.KubernetesCloud;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

@@ -8,6 +8,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Label;
 import java.util.ArrayList;
 import java.util.List;
+import org.csanchez.jenkins.plugins.kubernetes.random.KubernetesCloud;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;

@@ -7,6 +7,7 @@ import hudson.ExtensionPoint;
 import hudson.model.Label;
 import java.util.ArrayList;
 import java.util.List;
+import org.csanchez.jenkins.plugins.kubernetes.random.KubernetesCloud;
 
 /**
  * Filters a pod template according to criteria.

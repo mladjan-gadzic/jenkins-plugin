@@ -7,6 +7,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import java.util.Collection;
 import java.util.List;
+import org.csanchez.jenkins.plugins.kubernetes.random.KubernetesCloud;
 
 /**
  * A source of pod templates.

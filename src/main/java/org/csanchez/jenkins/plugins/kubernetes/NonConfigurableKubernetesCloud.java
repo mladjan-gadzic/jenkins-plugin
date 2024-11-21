@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+import org.csanchez.jenkins.plugins.kubernetes.random.KubernetesCloud;
 import org.kohsuke.stapler.StaplerRequest;
 
 public class NonConfigurableKubernetesCloud extends KubernetesCloud {

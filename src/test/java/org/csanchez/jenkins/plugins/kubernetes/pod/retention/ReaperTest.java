@@ -51,6 +51,7 @@ import jenkins.model.Jenkins;
 import okhttp3.mockwebserver.RecordedRequest;
 import org.csanchez.jenkins.plugins.kubernetes.*;
 import org.csanchez.jenkins.plugins.kubernetes.PodTemplate;
+import org.csanchez.jenkins.plugins.kubernetes.random.KubernetesCloud;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;

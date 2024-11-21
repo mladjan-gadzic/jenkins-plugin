@@ -7,7 +7,7 @@ import static org.junit.Assert.assertNotNull;
 
 import io.jenkins.plugins.casc.misc.RoundTripAbstractTest;
 import java.util.List;
-import org.csanchez.jenkins.plugins.kubernetes.KubernetesCloud;
+import org.csanchez.jenkins.plugins.kubernetes.random.KubernetesCloud;
 import org.csanchez.jenkins.plugins.kubernetes.PodTemplate;
 import org.csanchez.jenkins.plugins.kubernetes.volumes.workspace.*;
 import org.junit.runner.RunWith;

@@ -60,6 +60,7 @@ import jenkins.metrics.api.Metrics;
 import org.apache.commons.lang.StringUtils;
 import org.csanchez.jenkins.plugins.kubernetes.pod.decorator.PodDecoratorException;
 import org.csanchez.jenkins.plugins.kubernetes.pod.retention.Reaper;
+import org.csanchez.jenkins.plugins.kubernetes.random.KubernetesCloud;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**

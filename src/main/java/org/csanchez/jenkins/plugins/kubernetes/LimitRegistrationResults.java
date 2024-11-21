@@ -5,11 +5,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.csanchez.jenkins.plugins.kubernetes.random.KubernetesCloud;
 
 /**
  * Registers result for slots registration and provides an easy way to unregister.
  */
-class LimitRegistrationResults {
+public class LimitRegistrationResults {
     private static final Logger LOGGER = Logger.getLogger(LimitRegistrationResults.class.getName());
 
     private final KubernetesCloud cloud;

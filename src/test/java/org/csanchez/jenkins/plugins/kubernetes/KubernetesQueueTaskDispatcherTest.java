@@ -14,6 +14,7 @@ import hudson.slaves.RetentionStrategy;
 import java.util.ArrayList;
 import java.util.Calendar;
 import net.sf.json.JSONObject;
+import org.csanchez.jenkins.plugins.kubernetes.random.KubernetesCloud;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.support.steps.ExecutorStepExecution;
 import org.junit.Rule;

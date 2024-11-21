@@ -53,7 +53,7 @@ public class PodLabel extends AbstractDescribableImpl<PodLabel> implements Seria
      * @return immutable map of pod labels
      */
     @NonNull
-    static Map<String, String> toMap(@NonNull Iterable<PodLabel> labels) {
+    public static Map<String, String> toMap(@NonNull Iterable<PodLabel> labels) {
         Map<String, String> builder = new HashMap<>();
         for (PodLabel podLabel : labels) {
             builder.put(podLabel.getKey(), substituteEnv(podLabel.getValue()));
@@ -67,7 +67,7 @@ public class PodLabel extends AbstractDescribableImpl<PodLabel> implements Seria
      * @return list of pod labels
      */
     @NonNull
-    static List<PodLabel> fromMap(@NonNull Map<String, String> labels) {
+    public static List<PodLabel> fromMap(@NonNull Map<String, String> labels) {
         List<PodLabel> list = new ArrayList<>();
         for (Map.Entry<String, String> label : labels.entrySet()) {
             list.add(new PodLabel(label.getKey(), label.getValue()));
