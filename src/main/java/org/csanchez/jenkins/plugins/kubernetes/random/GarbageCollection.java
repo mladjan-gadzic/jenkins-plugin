@@ -1,4 +1,4 @@
-package org.csanchez.jenkins.plugins.kubernetes;
+package org.csanchez.jenkins.plugins.kubernetes.random;
 
 import static org.csanchez.jenkins.plugins.kubernetes.PodTemplateBuilder.LABEL_KUBERNETES_CONTROLLER;
 import static org.csanchez.jenkins.plugins.kubernetes.PodTemplateUtils.sanitizeLabel;
@@ -27,7 +27,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
-import org.csanchez.jenkins.plugins.kubernetes.random.KubernetesCloud;
+import org.csanchez.jenkins.plugins.kubernetes.KubernetesComputer;
 import org.jenkinsci.plugins.kubernetes.auth.KubernetesAuthException;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;

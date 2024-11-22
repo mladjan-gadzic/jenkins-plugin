@@ -72,7 +72,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import jenkins.metrics.api.Metrics;
 import jenkins.model.Jenkins;
-import org.csanchez.jenkins.plugins.kubernetes.GarbageCollection;
+import org.csanchez.jenkins.plugins.kubernetes.random.GarbageCollection;
 import org.csanchez.jenkins.plugins.kubernetes.random.KubernetesCloud;
 import org.csanchez.jenkins.plugins.kubernetes.KubernetesComputer;
 import org.csanchez.jenkins.plugins.kubernetes.KubernetesSlave;
@@ -891,7 +891,7 @@ public class KubernetesPipelineTest extends AbstractKubernetesPipelineTest {
         // Pod exists, need to kill the build, delete the agent without deleting the pod.
         // Wait for the timeout to expire and check that the pod is deleted.
         var garbageCollection = new GarbageCollection();
-        // Considering org.csanchez.jenkins.plugins.kubernetes.GarbageCollection.recurrencePeriod=5, this leaves 3 ticks
+        // Considering org.csanchez.jenkins.plugins.kubernetes.random.GarbageCollection.recurrencePeriod=5, this leaves 3 ticks
         garbageCollection.setTimeout(15);
         cloud.setGarbageCollection(garbageCollection);
         r.jenkins.save();

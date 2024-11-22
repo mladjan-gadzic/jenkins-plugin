@@ -69,7 +69,6 @@ import jenkins.util.SystemProperties;
 import jenkins.websocket.WebSockets;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
-import org.csanchez.jenkins.plugins.kubernetes.GarbageCollection;
 import org.csanchez.jenkins.plugins.kubernetes.InProvisioning;
 import org.csanchez.jenkins.plugins.kubernetes.KubernetesClientProvider;
 import org.csanchez.jenkins.plugins.kubernetes.KubernetesFactoryAdapter;

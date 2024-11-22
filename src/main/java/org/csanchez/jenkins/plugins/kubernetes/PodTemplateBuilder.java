@@ -79,6 +79,7 @@ import org.apache.commons.lang.StringUtils;
 import org.csanchez.jenkins.plugins.kubernetes.model.TemplateEnvVar;
 import org.csanchez.jenkins.plugins.kubernetes.pipeline.PodTemplateStepExecution;
 import org.csanchez.jenkins.plugins.kubernetes.pod.decorator.PodDecorator;
+import org.csanchez.jenkins.plugins.kubernetes.random.GarbageCollection;
 import org.csanchez.jenkins.plugins.kubernetes.random.KubernetesCloud;
 import org.csanchez.jenkins.plugins.kubernetes.volumes.ConfigMapVolume;
 import org.csanchez.jenkins.plugins.kubernetes.volumes.HostPathVolume;
