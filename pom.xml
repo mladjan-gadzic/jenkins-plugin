@@ -50,7 +50,7 @@
     <useBeta>true</useBeta>
     <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
 
-    <armada-grpc-java-client.version>0.0.4</armada-grpc-java-client.version>
+    <java-client.version>0.0.4</java-client.version>
   </properties>
 
   <dependencyManagement>
@@ -266,8 +266,8 @@
     </dependency>
     <dependency>
       <groupId>io.armadaproject</groupId>
-      <artifactId>armada-grpc-java-client</artifactId>
-      <version>${armada-grpc-java-client.version}</version>
+      <artifactId>java-client</artifactId>
+      <version>${java-client.version}</version>
       <!-- necessary because of enforcer plugin -->
       <exclusions>
         <exclusion>
