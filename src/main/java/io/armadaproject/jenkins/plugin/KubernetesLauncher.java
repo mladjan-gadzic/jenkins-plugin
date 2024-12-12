@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package org.csanchez.jenkins.plugins.kubernetes;
+package io.armadaproject.jenkins.plugin;
 
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.INFO;
@@ -44,12 +44,10 @@ import hudson.slaves.SlaveComputer;
 import io.armadaproject.ArmadaClient;
 import io.armadaproject.ArmadaMapper;
 import io.fabric8.kubernetes.api.model.ContainerStatus;
-import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -59,12 +57,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import jenkins.metrics.api.Metrics;
 import org.apache.commons.lang.StringUtils;
 import org.awaitility.Awaitility;
-import org.csanchez.jenkins.plugins.kubernetes.pod.decorator.PodDecoratorException;
-import org.csanchez.jenkins.plugins.kubernetes.pod.retention.Reaper;
+import io.armadaproject.jenkins.plugin.pod.decorator.PodDecoratorException;
+import io.armadaproject.jenkins.plugin.pod.retention.Reaper;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -129,7 +126,6 @@ public class KubernetesLauncher extends JNLPLauncher {
         try(ArmadaClient armadaClient = node.getKubernetesCloud().connectToArmada()) {
             PodTemplate template = node.getTemplate();
             KubernetesCloud cloud = node.getKubernetesCloud();
-            ArmadaClient armadaClient = cloud.connectToArmada();
             Pod pod;
             try {
                 pod = template.build(node);

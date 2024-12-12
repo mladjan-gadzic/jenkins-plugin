@@ -17,7 +17,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import jenkins.util.Timer;
-import org.csanchez.jenkins.plugins.kubernetes.KubernetesCloud;
+import io.armadaproject.jenkins.plugin.KubernetesCloud;
 
 /**
  * Implementation of {@link NodeProvisioner.Strategy} which will provision a new node immediately as

@@ -1,8 +1,8 @@
-package org.csanchez.jenkins.plugins.kubernetes;
+package io.armadaproject.jenkins.plugin;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.lang.StringUtils.isEmpty;
-import static org.csanchez.jenkins.plugins.kubernetes.KubernetesFactoryAdapter.resolveCredentials;
+import static io.armadaproject.jenkins.plugin.KubernetesFactoryAdapter.resolveCredentials;
 
 import api.Health.HealthCheckResponse.ServingStatus;
 import com.cloudbees.plugins.credentials.CredentialsMatchers;
@@ -32,6 +32,8 @@ import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 import hudson.util.XStream2;
 import io.armadaproject.ArmadaClient;
+import io.armadaproject.jenkins.plugin.pod.retention.Default;
+import io.armadaproject.jenkins.plugin.pod.retention.PodRetention;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.VersionInfo;
@@ -69,9 +71,8 @@ import jenkins.util.SystemProperties;
 import jenkins.websocket.WebSockets;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
-import org.csanchez.jenkins.plugins.kubernetes.pipeline.PodTemplateMap;
-import org.csanchez.jenkins.plugins.kubernetes.pod.retention.Default;
-import org.csanchez.jenkins.plugins.kubernetes.pod.retention.PodRetention;
+import io.armadaproject.jenkins.plugin.Messages;
+import io.armadaproject.jenkins.plugin.pipeline.PodTemplateMap;
 import org.jenkinsci.plugins.kubernetes.auth.KubernetesAuth;
 import org.jenkinsci.plugins.kubernetes.auth.KubernetesAuthException;
 import org.jenkinsci.plugins.plaincredentials.StringCredentials;
@@ -1011,13 +1012,13 @@ public class KubernetesCloud extends Cloud implements PodTemplateGroup {
         @Initializer(before = InitMilestone.PLUGINS_STARTED)
         public static void addAliases() {
             Jenkins.XSTREAM2.addCompatibilityAlias(
-                    "org.csanchez.jenkins.plugins.kubernetes.OpenShiftBearerTokenCredentialImpl",
+                    "io.armadaproject.jenkins.plugin.OpenShiftBearerTokenCredentialImpl",
                     org.jenkinsci.plugins.kubernetes.credentials.OpenShiftBearerTokenCredentialImpl.class);
             Jenkins.XSTREAM2.addCompatibilityAlias(
-                    "org.csanchez.jenkins.plugins.kubernetes.OpenShiftTokenCredentialImpl",
+                    "io.armadaproject.jenkins.plugin.OpenShiftTokenCredentialImpl",
                     StringCredentialsImpl.class);
             Jenkins.XSTREAM2.addCompatibilityAlias(
-                    "org.csanchez.jenkins.plugins.kubernetes.ServiceAccountCredential",
+                    "io.armadaproject.jenkins.plugin.ServiceAccountCredential",
                     org.jenkinsci.plugins.kubernetes.credentials.FileSystemServiceAccountCredential.class);
         }
 
