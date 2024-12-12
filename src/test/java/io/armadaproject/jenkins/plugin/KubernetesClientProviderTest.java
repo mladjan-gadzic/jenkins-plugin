@@ -26,9 +26,6 @@ package io.armadaproject.jenkins.plugin;
 import static org.junit.Assert.assertEquals;
 
 import java.util.function.Consumer;
-import io.armadaproject.jenkins.plugin.KubernetesClientProvider;
-import io.armadaproject.jenkins.plugin.KubernetesCloud;
-import io.armadaproject.jenkins.plugin.PodLabel;
 import io.armadaproject.jenkins.plugin.pod.retention.Always;
 import org.junit.Assert;
 import org.junit.Test;
@@ -37,7 +34,7 @@ public class KubernetesClientProviderTest {
 
     @Test
     public void testGetValidity() {
-        KubernetesCloud cloud = new KubernetesCloud("foo");
+        ArmadaCloud cloud = new ArmadaCloud("foo");
         // changes to these properties should trigger different validity value
         checkValidityChanges(
                 cloud,
@@ -66,19 +63,19 @@ public class KubernetesClientProviderTest {
         assertEquals(KubernetesClientProvider.getValidity(cloud), KubernetesClientProvider.getValidity(cloud));
     }
 
-    private void checkValidityChanges(KubernetesCloud cloud, Consumer<KubernetesCloud>... mutations) {
+    private void checkValidityChanges(ArmadaCloud cloud, Consumer<ArmadaCloud>... mutations) {
         checkValidity(cloud, Assert::assertNotEquals, mutations);
     }
 
-    private void checkValidityDoesNotChange(KubernetesCloud cloud, Consumer<KubernetesCloud>... mutations) {
+    private void checkValidityDoesNotChange(ArmadaCloud cloud, Consumer<ArmadaCloud>... mutations) {
         checkValidity(cloud, Assert::assertEquals, mutations);
     }
 
     private void checkValidity(
-            KubernetesCloud cloud, ValidityAssertion validityAssertion, Consumer<KubernetesCloud>... mutations) {
+            ArmadaCloud cloud, ValidityAssertion validityAssertion, Consumer<ArmadaCloud>... mutations) {
         int v = KubernetesClientProvider.getValidity(cloud);
         int count = 1;
-        for (Consumer<KubernetesCloud> mut : mutations) {
+        for (Consumer<ArmadaCloud> mut : mutations) {
             mut.accept(cloud);
             int after = KubernetesClientProvider.getValidity(cloud);
             validityAssertion.doAssert("change #" + count++ + " of " + mutations.length, v, after);

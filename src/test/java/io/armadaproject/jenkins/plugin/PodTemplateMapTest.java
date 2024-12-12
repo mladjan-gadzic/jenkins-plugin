@@ -3,8 +3,6 @@ package io.armadaproject.jenkins.plugin;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
-import io.armadaproject.jenkins.plugin.KubernetesCloud;
-import io.armadaproject.jenkins.plugin.PodTemplate;
 import io.armadaproject.jenkins.plugin.pipeline.PodTemplateMap;
 import org.junit.Before;
 import org.junit.Rule;
@@ -16,12 +14,12 @@ public class PodTemplateMapTest {
     public JenkinsRule j = new JenkinsRule();
 
     private PodTemplateMap instance;
-    private KubernetesCloud cloud;
+    private ArmadaCloud cloud;
 
     @Before
     public void setUp() throws IOException {
         this.instance = PodTemplateMap.get();
-        this.cloud = new KubernetesCloud("kubernetes");
+        this.cloud = new ArmadaCloud("kubernetes");
         j.jenkins.clouds.add(cloud);
         j.jenkins.save();
     }

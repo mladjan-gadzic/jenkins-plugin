@@ -27,8 +27,8 @@ public class RestrictedPssSecurityContextInjector implements PodDecorator {
 
     @NonNull
     @Override
-    public Pod decorate(@NonNull KubernetesCloud kubernetesCloud, @NonNull Pod pod) {
-        if (kubernetesCloud.isRestrictedPssSecurityContext()) {
+    public Pod decorate(@NonNull ArmadaCloud armadaCloud, @NonNull Pod pod) {
+        if (armadaCloud.isRestrictedPssSecurityContext()) {
             var metadata = pod.getMetadata();
             if (metadata == null) {
                 // be defensive, this won't happen in real usage

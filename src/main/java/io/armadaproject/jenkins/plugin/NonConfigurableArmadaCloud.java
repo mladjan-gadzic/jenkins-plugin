@@ -9,11 +9,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
-import io.armadaproject.jenkins.plugin.Messages;
 import org.kohsuke.stapler.StaplerRequest;
 
-public class NonConfigurableKubernetesCloud extends KubernetesCloud {
-    public NonConfigurableKubernetesCloud(@NonNull String name, @NonNull KubernetesCloud source) {
+public class NonConfigurableArmadaCloud extends ArmadaCloud {
+    public NonConfigurableArmadaCloud(@NonNull String name, @NonNull ArmadaCloud source) {
         super(name, source);
     }
 
@@ -48,7 +47,7 @@ public class NonConfigurableKubernetesCloud extends KubernetesCloud {
     }
 
     @Extension
-    public static class DescriptorImpl extends KubernetesCloud.DescriptorImpl {
+    public static class DescriptorImpl extends ArmadaCloud.DescriptorImpl {
         @Override
         public String getDisplayName() {
             return Messages.NonConfigurableKubernetesCloud_displayName();

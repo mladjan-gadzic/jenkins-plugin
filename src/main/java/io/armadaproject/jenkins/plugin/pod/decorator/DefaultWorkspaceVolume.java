@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 import io.armadaproject.jenkins.plugin.ContainerTemplate;
-import io.armadaproject.jenkins.plugin.KubernetesCloud;
+import io.armadaproject.jenkins.plugin.ArmadaCloud;
 
 /**
  * Sets a workspace volume mounted in all containers.
@@ -37,7 +37,7 @@ public class DefaultWorkspaceVolume implements PodDecorator {
 
     @NonNull
     @Override
-    public Pod decorate(@NonNull KubernetesCloud kubernetesCloud, @NonNull Pod pod) {
+    public Pod decorate(@NonNull ArmadaCloud armadaCloud, @NonNull Pod pod) {
         PodSpec podSpec = pod.getSpec();
         // default workspace volume, add an empty volume to share the workspace across the pod
         if (podSpec.getVolumes().stream().noneMatch(WORKSPACE_VOLUME_PREDICATE)) {

@@ -4,7 +4,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.util.CopyOnWriteMap;
-import io.armadaproject.jenkins.plugin.KubernetesCloud;
+import io.armadaproject.jenkins.plugin.ArmadaCloud;
 import io.armadaproject.jenkins.plugin.PodTemplate;
 import io.armadaproject.jenkins.plugin.PodTemplateSource;
 import java.util.Collections;
@@ -15,7 +15,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * A map of {@link KubernetesCloud} -&gt; List of {@link PodTemplate} instances.
+ * A map of {@link ArmadaCloud} -&gt; List of {@link PodTemplate} instances.
  */
 @Extension
 public class PodTemplateMap {
@@ -36,11 +36,11 @@ public class PodTemplateMap {
      * @return a read-only view of the templates available for the corresponding cloud instance.
      */
     @NonNull
-    public List<PodTemplate> getTemplates(@NonNull KubernetesCloud cloud) {
+    public List<PodTemplate> getTemplates(@NonNull ArmadaCloud cloud) {
         return Collections.unmodifiableList(getOrCreateTemplateList(cloud));
     }
 
-    private List<PodTemplate> getOrCreateTemplateList(@NonNull KubernetesCloud cloud) {
+    private List<PodTemplate> getOrCreateTemplateList(@NonNull ArmadaCloud cloud) {
         List<PodTemplate> podTemplates = map.get(cloud.name);
         return podTemplates == null ? new CopyOnWriteArrayList<>() : podTemplates;
     }
@@ -50,7 +50,7 @@ public class PodTemplateMap {
      * @param cloud The cloud instance.
      * @param podTemplate The pod template to add.
      */
-    public void addTemplate(@NonNull KubernetesCloud cloud, @NonNull PodTemplate podTemplate) {
+    public void addTemplate(@NonNull ArmadaCloud cloud, @NonNull PodTemplate podTemplate) {
         synchronized (this.map) {
             LOGGER.log(
                     Level.FINE,
@@ -61,7 +61,7 @@ public class PodTemplateMap {
         }
     }
 
-    public void removeTemplate(@NonNull KubernetesCloud cloud, @NonNull PodTemplate podTemplate) {
+    public void removeTemplate(@NonNull ArmadaCloud cloud, @NonNull PodTemplate podTemplate) {
         synchronized (this.map) {
             LOGGER.log(
                     Level.FINE,
@@ -75,7 +75,7 @@ public class PodTemplateMap {
 
         @NonNull
         @Override
-        public List<PodTemplate> getList(@NonNull KubernetesCloud cloud) {
+        public List<PodTemplate> getList(@NonNull ArmadaCloud cloud) {
             return PodTemplateMap.get().getTemplates(cloud);
         }
     }

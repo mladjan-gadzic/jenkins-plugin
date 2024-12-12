@@ -8,8 +8,6 @@ import static org.hamcrest.Matchers.notNullValue;
 
 import com.cloudbees.hudson.plugins.folder.Folder;
 import java.util.Collections;
-import io.armadaproject.jenkins.plugin.KubernetesCloud;
-import io.armadaproject.jenkins.plugin.KubernetesFolderProperty;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -21,9 +19,9 @@ public class KubernetesFolderPropertyTest {
 
     @Test
     public void propertySavedOnFirstSaveTest() throws Exception {
-        KubernetesCloud kube1 = new KubernetesCloud("kube1");
+        ArmadaCloud kube1 = new ArmadaCloud("kube1");
         kube1.setUsageRestricted(true);
-        KubernetesCloud kube2 = new KubernetesCloud("kube2");
+        ArmadaCloud kube2 = new ArmadaCloud("kube2");
         kube2.setUsageRestricted(true);
         j.jenkins.clouds.add(kube1);
         j.jenkins.clouds.add(kube2);

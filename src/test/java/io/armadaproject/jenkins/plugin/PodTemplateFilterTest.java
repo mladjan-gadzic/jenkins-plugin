@@ -8,9 +8,6 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Label;
 import java.util.ArrayList;
 import java.util.List;
-import io.armadaproject.jenkins.plugin.KubernetesCloud;
-import io.armadaproject.jenkins.plugin.PodTemplate;
-import io.armadaproject.jenkins.plugin.PodTemplateFilter;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -26,7 +23,7 @@ public class PodTemplateFilterTest {
         @CheckForNull
         @Override
         protected PodTemplate transform(
-                @NonNull KubernetesCloud cloud, @NonNull PodTemplate podTemplate, @CheckForNull Label label) {
+                @NonNull ArmadaCloud cloud, @NonNull PodTemplate podTemplate, @CheckForNull Label label) {
             return addYaml(podTemplate, "yaml1");
         }
     }
@@ -36,7 +33,7 @@ public class PodTemplateFilterTest {
         @CheckForNull
         @Override
         protected PodTemplate transform(
-                @NonNull KubernetesCloud cloud, @NonNull PodTemplate podTemplate, @CheckForNull Label label) {
+                @NonNull ArmadaCloud cloud, @NonNull PodTemplate podTemplate, @CheckForNull Label label) {
             return addYaml(podTemplate, "yaml2");
         }
     }

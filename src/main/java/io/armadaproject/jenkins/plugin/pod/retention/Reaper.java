@@ -36,7 +36,7 @@ import hudson.slaves.ComputerListener;
 import hudson.slaves.EphemeralNode;
 import hudson.slaves.OfflineCause;
 import io.armadaproject.jenkins.plugin.KubernetesClientProvider;
-import io.armadaproject.jenkins.plugin.KubernetesCloud;
+import io.armadaproject.jenkins.plugin.ArmadaCloud;
 import io.armadaproject.jenkins.plugin.KubernetesComputer;
 import io.armadaproject.jenkins.plugin.KubernetesSlave;
 import io.armadaproject.jenkins.plugin.PodUtils;
@@ -68,7 +68,6 @@ import jenkins.model.Jenkins;
 import jenkins.util.Listeners;
 import jenkins.util.SystemProperties;
 import jenkins.util.Timer;
-import io.armadaproject.jenkins.plugin.pod.retention.Messages;
 import org.jenkinsci.plugins.kubernetes.auth.KubernetesAuthException;
 
 /**
@@ -170,7 +169,7 @@ public class Reaper extends ComputerListener {
                     // yet we do not want to do an unnamespaced pod list for RBAC reasons.
                     // Could use a hybrid approach: first list all pods in the configured namespace for all clouds;
                     // then go back and individually check any unmatched agents with their configured namespace.
-                    KubernetesCloud cloud = ks.getKubernetesCloud();
+                    ArmadaCloud cloud = ks.getKubernetesCloud();
                     if (cloud.connect().pods().inNamespace(ns).withName(name).get() == null) {
                         LOGGER.info(() -> ns + "/" + name
                                 + " seems to have been deleted, so removing corresponding Jenkins agent");
@@ -186,15 +185,15 @@ public class Reaper extends ComputerListener {
     }
 
     /**
-     * Create watchers for each configured {@link KubernetesCloud} in Jenkins and remove any existing watchers
-     * for clouds that have been removed. If a {@link KubernetesCloud} client configuration property has been
+     * Create watchers for each configured {@link ArmadaCloud} in Jenkins and remove any existing watchers
+     * for clouds that have been removed. If a {@link ArmadaCloud} client configuration property has been
      * updated a new watcher will be created to replace the existing one.
      */
     private void watchClouds() {
         Jenkins jenkins = Jenkins.getInstanceOrNull();
         if (jenkins != null) {
             Set<String> cloudNames = new HashSet<>(this.watchers.keySet());
-            for (KubernetesCloud kc : jenkins.clouds.getAll(KubernetesCloud.class)) {
+            for (ArmadaCloud kc : jenkins.clouds.getAll(ArmadaCloud.class)) {
                 watchCloud(kc);
                 cloudNames.remove(kc.name);
             }
@@ -212,7 +211,7 @@ public class Reaper extends ComputerListener {
      * is no longer valid.
      * @param kc kubernetes cloud to watch
      */
-    private void watchCloud(@NonNull KubernetesCloud kc) {
+    private void watchCloud(@NonNull ArmadaCloud kc) {
         // can't use ConcurrentHashMap#computeIfAbsent because CloudPodWatcher will remove itself from the watchers
         // map on close. If an error occurs when creating the watch it would create a deadlock situation.
         CloudPodWatcher watcher = new CloudPodWatcher(kc);
@@ -288,7 +287,7 @@ public class Reaper extends ComputerListener {
         @CheckForNull
         private Watch watch;
 
-        CloudPodWatcher(@NonNull KubernetesCloud cloud) {
+        CloudPodWatcher(@NonNull ArmadaCloud cloud) {
             this.cloudName = cloud.name;
             this.clientValidity = KubernetesClientProvider.getValidity(cloud);
         }

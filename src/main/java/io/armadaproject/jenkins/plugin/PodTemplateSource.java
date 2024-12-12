@@ -12,7 +12,7 @@ import java.util.List;
  * A source of pod templates.
  */
 public abstract class PodTemplateSource implements ExtensionPoint {
-    public static List<PodTemplate> getAll(@NonNull KubernetesCloud cloud) {
+    public static List<PodTemplate> getAll(@NonNull ArmadaCloud cloud) {
         return ExtensionList.lookup(PodTemplateSource.class).stream()
                 .map(s -> s.getList(cloud))
                 .flatMap(Collection::stream)
@@ -25,5 +25,5 @@ public abstract class PodTemplateSource implements ExtensionPoint {
      * @param cloud
      */
     @NonNull
-    protected abstract List<PodTemplate> getList(@NonNull KubernetesCloud cloud);
+    protected abstract List<PodTemplate> getList(@NonNull ArmadaCloud cloud);
 }

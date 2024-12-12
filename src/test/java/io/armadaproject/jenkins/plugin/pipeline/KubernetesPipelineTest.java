@@ -73,7 +73,7 @@ import java.util.stream.Collectors;
 import jenkins.metrics.api.Metrics;
 import jenkins.model.Jenkins;
 import io.armadaproject.jenkins.plugin.GarbageCollection;
-import io.armadaproject.jenkins.plugin.KubernetesCloud;
+import io.armadaproject.jenkins.plugin.ArmadaCloud;
 import io.armadaproject.jenkins.plugin.KubernetesComputer;
 import io.armadaproject.jenkins.plugin.KubernetesSlave;
 import io.armadaproject.jenkins.plugin.KubernetesTestUtil;
@@ -943,7 +943,7 @@ public class KubernetesPipelineTest extends AbstractKubernetesPipelineTest {
     public static class DecoratorImpl implements PodDecorator {
         @NotNull
         @Override
-        public Pod decorate(@NotNull KubernetesCloud kubernetesCloud, @NotNull Pod pod) {
+        public Pod decorate(@NotNull ArmadaCloud armadaCloud, @NotNull Pod pod) {
             throw new PodDecoratorException("I always fail");
         }
     }

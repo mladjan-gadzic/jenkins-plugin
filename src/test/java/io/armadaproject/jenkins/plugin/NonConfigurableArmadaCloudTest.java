@@ -9,7 +9,7 @@ import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 
-public class NonConfigurableKubernetesCloudTest {
+public class NonConfigurableArmadaCloudTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
@@ -17,7 +17,7 @@ public class NonConfigurableKubernetesCloudTest {
     @Rule
     public LoggerRule logs = new LoggerRule()
             .record(
-                    Logger.getLogger(NonConfigurableKubernetesCloudTest.class
+                    Logger.getLogger(NonConfigurableArmadaCloudTest.class
                             .getPackage()
                             .getName()),
                     Level.ALL);
@@ -25,7 +25,7 @@ public class NonConfigurableKubernetesCloudTest {
     @Test
     public void configRoundTrip() throws Exception {
         // create a cloud with a template
-        var cloud = new KubernetesCloud("kubernetes");
+        var cloud = new ArmadaCloud("kubernetes");
         var podTemplate = new PodTemplate();
         podTemplate.setName("test-template");
         podTemplate.setLabel("test");
@@ -33,7 +33,7 @@ public class NonConfigurableKubernetesCloudTest {
         var jenkins = j.jenkins;
         jenkins.clouds.add(cloud);
         jenkins.save();
-        var readOnly = new NonConfigurableKubernetesCloud("NonConfigurableKubernetes", cloud);
+        var readOnly = new NonConfigurableArmadaCloud("NonConfigurableKubernetes", cloud);
         readOnly.removeTemplate(podTemplate); // should not remove anything
         var podTemplate2 = new PodTemplate();
         podTemplate2.setName("test-template-read-only");

@@ -143,7 +143,7 @@ public class GarbageCollection extends AbstractDescribableImpl<GarbageCollection
         }
 
         private static void garbageCollect() {
-            for (var cloud : Jenkins.get().clouds.getAll(KubernetesCloud.class)) {
+            for (var cloud : Jenkins.get().clouds.getAll(ArmadaCloud.class)) {
                 Optional.ofNullable(cloud.getGarbageCollection()).ifPresent(gc -> {
                     try {
                         var client = cloud.connect();

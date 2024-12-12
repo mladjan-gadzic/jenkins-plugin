@@ -1,14 +1,13 @@
 package io.armadaproject.jenkins.plugin.pod.retention;
 
 import hudson.Extension;
-import io.armadaproject.jenkins.plugin.KubernetesCloud;
+import io.armadaproject.jenkins.plugin.ArmadaCloud;
 import io.fabric8.kubernetes.api.model.Pod;
 import java.io.Serializable;
 import java.util.Locale;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import io.armadaproject.jenkins.plugin.pod.retention.Messages;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -22,7 +21,7 @@ public class OnFailure extends PodRetention implements Serializable {
     public OnFailure() {}
 
     @Override
-    public boolean shouldDeletePod(KubernetesCloud cloud, Supplier<Pod> podS) {
+    public boolean shouldDeletePod(ArmadaCloud cloud, Supplier<Pod> podS) {
         Pod pod = null;
         try {
             pod = podS.get();

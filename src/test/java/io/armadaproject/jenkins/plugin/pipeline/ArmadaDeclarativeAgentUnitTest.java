@@ -6,7 +6,6 @@ import static org.hamcrest.Matchers.isA;
 
 import java.util.Collections;
 import java.util.Map;
-import io.armadaproject.jenkins.plugin.pipeline.KubernetesDeclarativeAgent;
 import io.armadaproject.jenkins.plugin.pod.retention.Never;
 import io.armadaproject.jenkins.plugin.pod.yaml.Merge;
 import io.armadaproject.jenkins.plugin.volumes.workspace.DynamicPVCWorkspaceVolume;
@@ -17,18 +16,18 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
-public class KubernetesDeclarativeAgentUnitTest {
+public class ArmadaDeclarativeAgentUnitTest {
     @ClassRule
     public static JenkinsRule j = new JenkinsRule();
 
-    KubernetesDeclarativeAgent instance;
+    ArmadaDeclarativeAgent instance;
 
     DirectiveGeneratorTester dg;
     AgentDirective directive;
 
     @Before
     public void setUp() {
-        instance = new KubernetesDeclarativeAgent();
+        instance = new ArmadaDeclarativeAgent();
         directive = new AgentDirective(instance);
         dg = new DirectiveGeneratorTester(j);
     }

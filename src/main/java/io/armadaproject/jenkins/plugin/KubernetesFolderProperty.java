@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import io.armadaproject.jenkins.plugin.Messages;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -65,7 +64,7 @@ public class KubernetesFolderProperty extends AbstractFolderProperty<AbstractFol
         ItemGroup parent = job.getParent();
         Set<String> allowedClouds = new HashSet<>();
 
-        KubernetesCloud targetCloud = agent.getKubernetesCloud();
+        ArmadaCloud targetCloud = agent.getKubernetesCloud();
         if (targetCloud.isUsageRestricted()) {
             KubernetesFolderProperty.collectAllowedClouds(allowedClouds, parent);
             return allowedClouds.contains(targetCloud.name);
@@ -127,9 +126,9 @@ public class KubernetesFolderProperty extends AbstractFolderProperty<AbstractFol
         }
     }
 
-    private static List<KubernetesCloud> getUsageRestrictedKubernetesClouds() {
-        List<KubernetesCloud> clouds = Jenkins.get().clouds.getAll(KubernetesCloud.class).stream()
-                .filter(KubernetesCloud::isUsageRestricted)
+    private static List<ArmadaCloud> getUsageRestrictedKubernetesClouds() {
+        List<ArmadaCloud> clouds = Jenkins.get().clouds.getAll(ArmadaCloud.class).stream()
+                .filter(ArmadaCloud::isUsageRestricted)
                 .collect(Collectors.toList());
         clouds.sort(Comparator.<Cloud, String>comparing(o -> o.name));
         return clouds;
@@ -179,8 +178,8 @@ public class KubernetesFolderProperty extends AbstractFolderProperty<AbstractFol
 
     @SuppressFBWarnings(value = "UPM_UNCALLED_PRIVATE_METHOD")
     private static boolean isUsageRestrictedKubernetesCloud(Cloud cloud) {
-        if (cloud instanceof KubernetesCloud) {
-            return ((KubernetesCloud) cloud).isUsageRestricted();
+        if (cloud instanceof ArmadaCloud) {
+            return ((ArmadaCloud) cloud).isUsageRestricted();
         }
         return false;
     }

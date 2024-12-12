@@ -85,8 +85,8 @@ public class KubernetesTestUtil {
 
     public static final String WINDOWS_1809_BUILD = "10.0.17763";
 
-    public static KubernetesCloud setupCloud(Object test, TestName name) throws KubernetesAuthException, IOException {
-        KubernetesCloud cloud = new KubernetesCloud("kubernetes");
+    public static ArmadaCloud setupCloud(Object test, TestName name) throws KubernetesAuthException, IOException {
+        ArmadaCloud cloud = new ArmadaCloud("kubernetes");
         // unique labels per test
         cloud.setPodLabels(PodLabel.fromMap(getLabels(cloud, test, name)));
         KubernetesClient client = cloud.connect();
@@ -125,7 +125,7 @@ public class KubernetesTestUtil {
         return cloud;
     }
 
-    public static void setupHost(KubernetesCloud cloud) throws Exception {
+    public static void setupHost(ArmadaCloud cloud) throws Exception {
         // Agents running in Kubernetes (minikube) need to connect to this server, so localhost does not work
         URL url = new URL(JenkinsLocationConfiguration.get().getUrl());
         String hostAddress = System.getProperty("jenkins.host.address");
@@ -186,7 +186,7 @@ public class KubernetesTestUtil {
     /**
      * Labels to add to the pods so we can match them to a specific build run, test class and method
      */
-    public static Map<String, String> getLabels(KubernetesCloud cloud, Object o, TestName name) {
+    public static Map<String, String> getLabels(ArmadaCloud cloud, Object o, TestName name) {
         Map<String, String> l = new HashMap<>();
         l.put("BRANCH_NAME", BRANCH_NAME == null ? "undefined" : BRANCH_NAME);
         l.put("BUILD_NUMBER", BUILD_NUMBER == null ? "undefined" : BUILD_NUMBER);

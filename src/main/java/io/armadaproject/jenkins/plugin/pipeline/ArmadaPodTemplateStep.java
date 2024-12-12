@@ -9,7 +9,7 @@ import hudson.model.TaskListener;
 import hudson.slaves.Cloud;
 import hudson.util.ListBoxModel;
 import io.armadaproject.jenkins.plugin.ContainerTemplate;
-import io.armadaproject.jenkins.plugin.KubernetesCloud;
+import io.armadaproject.jenkins.plugin.ArmadaCloud;
 import io.armadaproject.jenkins.plugin.PodAnnotation;
 import io.armadaproject.jenkins.plugin.PodTemplate;
 import io.armadaproject.jenkins.plugin.pod.retention.PodRetention;
@@ -36,7 +36,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
-public class PodTemplateStep extends Step implements Serializable {
+public class ArmadaPodTemplateStep extends Step implements Serializable {
 
     private static final long serialVersionUID = 5588861066775717487L;
 
@@ -112,7 +112,7 @@ public class PodTemplateStep extends Step implements Serializable {
     private boolean agentInjection;
 
     @DataBoundConstructor
-    public PodTemplateStep() {}
+    public ArmadaPodTemplateStep() {}
 
     public String getLabel() {
         return label;
@@ -234,9 +234,8 @@ public class PodTemplateStep extends Step implements Serializable {
     @DataBoundSetter
     public void setWorkspaceVolume(@CheckForNull WorkspaceVolume workspaceVolume) {
         this.workspaceVolume =
-                (workspaceVolume == null || workspaceVolume.equals(DescriptorImpl.defaultWorkspaceVolume))
-                        ? null
-                        : workspaceVolume;
+                (workspaceVolume == null || workspaceVolume
+                    .equals(DescriptorImpl.defaultWorkspaceVolume)) ? null : workspaceVolume;
     }
 
     public Integer getInstanceCap() {
@@ -386,7 +385,8 @@ public class PodTemplateStep extends Step implements Serializable {
     @DataBoundSetter
     public void setPodRetention(@CheckForNull PodRetention podRetention) {
         this.podRetention =
-                (podRetention == null || podRetention.equals(DescriptorImpl.defaultPodRetention)) ? null : podRetention;
+                (podRetention == null || podRetention
+                    .equals(DescriptorImpl.defaultPodRetention)) ? null : podRetention;
     }
 
     public boolean isInheritYamlMergeStrategy() {
@@ -478,7 +478,8 @@ public class PodTemplateStep extends Step implements Serializable {
             if (!Jenkins.get().hasPermission(Jenkins.MANAGE)) {
                 return result;
             }
-            Jenkins.get().clouds.getAll(KubernetesCloud.class).forEach(cloud -> result.add(cloud.name));
+            Jenkins.get().clouds.getAll(ArmadaCloud.class)
+                .forEach(cloud -> result.add(cloud.name));
             return result;
         }
 
@@ -493,12 +494,12 @@ public class PodTemplateStep extends Step implements Serializable {
             }
             Cloud cloud;
             if (cloudName == null) {
-                cloud = Jenkins.get().clouds.get(KubernetesCloud.class);
+                cloud = Jenkins.get().clouds.get(ArmadaCloud.class);
             } else {
                 cloud = Jenkins.get().getCloud(cloudName);
             }
-            if (cloud instanceof KubernetesCloud) {
-                List<PodTemplate> templates = ((KubernetesCloud) cloud).getTemplates();
+            if (cloud instanceof ArmadaCloud) {
+                List<PodTemplate> templates = ((ArmadaCloud) cloud).getTemplates();
                 result.addAll(templates.stream()
                         .filter(template -> StringUtils.isNotEmpty(template.getName()))
                         .map(PodTemplate::getName)

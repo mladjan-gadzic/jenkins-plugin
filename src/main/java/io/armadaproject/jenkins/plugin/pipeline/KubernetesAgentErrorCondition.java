@@ -24,7 +24,7 @@ import hudson.ExtensionList;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.model.labels.LabelAtom;
-import io.armadaproject.jenkins.plugin.KubernetesCloud;
+import io.armadaproject.jenkins.plugin.ArmadaCloud;
 import io.armadaproject.jenkins.plugin.KubernetesSlave;
 import java.io.IOException;
 import java.util.Set;
@@ -117,8 +117,8 @@ public class KubernetesAgentErrorCondition extends ErrorCondition {
                     Set<LabelAtom> labels = ws.getLabels();
                     if (labels.stream().noneMatch(l -> Jenkins.get().clouds.stream()
                             .anyMatch(c ->
-                                    c instanceof KubernetesCloud
-                                        && ((KubernetesCloud) c).getTemplate(l) != null))) {
+                                    c instanceof ArmadaCloud
+                                        && ((ArmadaCloud) c).getTemplate(l) != null))) {
                         if (!handleNonKubernetes) {
                             listener.getLogger()
                                     .println(node + " did not look like a Kubernetes agent judging by " + labels
@@ -139,7 +139,7 @@ public class KubernetesAgentErrorCondition extends ErrorCondition {
                 return true;
             }
             foundPodTemplate |= callStack instanceof StepNode
-                    && ((StepNode) callStack).getDescriptor() instanceof PodTemplateStep.DescriptorImpl;
+                    && ((StepNode) callStack).getDescriptor() instanceof ArmadaPodTemplateStep.DescriptorImpl;
         }
         if (!handleNonKubernetes) {
             if (foundPodTemplate) {

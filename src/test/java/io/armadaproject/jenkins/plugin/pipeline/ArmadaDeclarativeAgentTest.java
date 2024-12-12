@@ -48,7 +48,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 
-public class KubernetesDeclarativeAgentTest extends AbstractKubernetesPipelineTest {
+public class ArmadaDeclarativeAgentTest extends AbstractKubernetesPipelineTest {
 
     @Rule
     public GitSampleRepoRule repoRule = new GitSampleRepoRule();

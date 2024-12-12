@@ -13,7 +13,7 @@ import io.jenkins.plugins.casc.misc.RoundTripAbstractTest;
 import java.util.List;
 import io.armadaproject.jenkins.plugin.ContainerLivenessProbe;
 import io.armadaproject.jenkins.plugin.ContainerTemplate;
-import io.armadaproject.jenkins.plugin.KubernetesCloud;
+import io.armadaproject.jenkins.plugin.ArmadaCloud;
 import io.armadaproject.jenkins.plugin.PodTemplate;
 import io.armadaproject.jenkins.plugin.pod.yaml.Merge;
 import io.armadaproject.jenkins.plugin.pod.yaml.Overrides;
@@ -25,9 +25,9 @@ public class CasCTest extends RoundTripAbstractTest {
 
     @Override
     protected void assertConfiguredAsExpected(RestartableJenkinsRule r, String configContent) {
-        List<KubernetesCloud> all = r.j.jenkins.clouds.getAll(KubernetesCloud.class);
+        List<ArmadaCloud> all = r.j.jenkins.clouds.getAll(ArmadaCloud.class);
         assertThat(all, hasSize(1));
-        KubernetesCloud cloud = all.get(0);
+        ArmadaCloud cloud = all.get(0);
         assertNotNull(cloud);
         assertEquals(10, cloud.getContainerCap());
         assertEquals("http://jenkinshost:8080/jenkins/", cloud.getJenkinsUrl());

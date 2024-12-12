@@ -17,7 +17,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import jenkins.util.Timer;
-import io.armadaproject.jenkins.plugin.KubernetesCloud;
+import io.armadaproject.jenkins.plugin.ArmadaCloud;
 
 /**
  * Implementation of {@link NodeProvisioner.Strategy} which will provision a new node immediately as
@@ -67,7 +67,7 @@ public class NoDelayProvisionerStrategy extends NodeProvisioner.Strategy {
             searchClouds:
             for (Cloud cloud : jenkinsClouds) {
                 int workloadToProvision = currentDemand - availableCapacity;
-                if (!(cloud instanceof KubernetesCloud)) continue;
+                if (!(cloud instanceof ArmadaCloud)) continue;
                 if (!cloud.canProvision(cloudState)) continue;
                 for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
                     if (cl.canProvision(cloud, cloudState, workloadToProvision) != null) {
@@ -131,7 +131,7 @@ public class NoDelayProvisionerStrategy extends NodeProvisioner.Strategy {
             final Jenkins jenkins = Jenkins.get();
             final Label label = item.getAssignedLabel();
             for (Cloud cloud : jenkins.clouds) {
-                if (cloud instanceof KubernetesCloud && cloud.canProvision(new Cloud.CloudState(label, 0))) {
+                if (cloud instanceof ArmadaCloud && cloud.canProvision(new Cloud.CloudState(label, 0))) {
                     final NodeProvisioner provisioner =
                             (label == null ? jenkins.unlabeledNodeProvisioner : label.nodeProvisioner);
                     provisioner.suggestReviewNow();

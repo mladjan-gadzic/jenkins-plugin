@@ -8,16 +8,16 @@ import hudson.slaves.NodeProvisioner;
  * Can be subclassed to provide alternative implementations of {@link hudson.slaves.NodeProvisioner.PlannedNode}.
  */
 public abstract class PlannedNodeBuilder {
-    private KubernetesCloud cloud;
+    private ArmadaCloud cloud;
     private PodTemplate template;
     private Label label;
     private int numExecutors = 1;
 
     /**
-     * Returns the {@link KubernetesCloud}.
-     * @return the {@link KubernetesCloud}.
+     * Returns the {@link ArmadaCloud}.
+     * @return the {@link ArmadaCloud}.
      */
-    public KubernetesCloud getCloud() {
+    public ArmadaCloud getCloud() {
         return cloud;
     }
 
@@ -38,10 +38,10 @@ public abstract class PlannedNodeBuilder {
     }
 
     /**
-     * @param cloud the {@link KubernetesCloud} instance to use.
+     * @param cloud the {@link ArmadaCloud} instance to use.
      * @return the current builder.
      */
-    public PlannedNodeBuilder cloud(KubernetesCloud cloud) {
+    public PlannedNodeBuilder cloud(ArmadaCloud cloud) {
         this.cloud = cloud;
         return this;
     }

@@ -6,11 +6,10 @@ import static org.mockito.Mockito.when;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodBuilder;
-import io.armadaproject.jenkins.plugin.KubernetesCloud;
+import io.armadaproject.jenkins.plugin.ArmadaCloud;
 import io.armadaproject.jenkins.plugin.KubernetesSlave;
 import io.armadaproject.jenkins.plugin.PodTemplate;
 import io.armadaproject.jenkins.plugin.PodTemplateBuilder;
-import io.armadaproject.jenkins.plugin.pod.decorator.PodDecorator;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -30,7 +29,7 @@ public class PodDecoratorTest {
     @Mock
     private KubernetesSlave slave;
 
-    private KubernetesCloud cloud = new KubernetesCloud("test");
+    private ArmadaCloud cloud = new ArmadaCloud("test");
 
     @Before
     public void setUp() {
@@ -41,7 +40,7 @@ public class PodDecoratorTest {
     public static class PodDecoratorImpl implements PodDecorator {
         @NonNull
         @Override
-        public Pod decorate(@NonNull KubernetesCloud kubernetesCloud, @NonNull Pod pod) {
+        public Pod decorate(@NonNull ArmadaCloud armadaCloud, @NonNull Pod pod) {
             // @formatter:off
             return new PodBuilder(pod)
                     .editOrNewMetadata()

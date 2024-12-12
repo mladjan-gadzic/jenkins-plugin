@@ -47,7 +47,7 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 import io.armadaproject.jenkins.plugin.ContainerEnvVar;
 import io.armadaproject.jenkins.plugin.ContainerTemplate;
-import io.armadaproject.jenkins.plugin.KubernetesCloud;
+import io.armadaproject.jenkins.plugin.ArmadaCloud;
 import io.armadaproject.jenkins.plugin.KubernetesComputer;
 import io.armadaproject.jenkins.plugin.KubernetesTestUtil;
 import io.armadaproject.jenkins.plugin.PodTemplate;
@@ -74,14 +74,14 @@ public abstract class AbstractKubernetesPipelineTest {
     @ClassRule
     public static BuildWatcher buildWatcher = new BuildWatcher();
 
-    protected KubernetesCloud cloud;
+    protected ArmadaCloud cloud;
 
     @Rule
     public JenkinsRule r = new JenkinsRule();
 
     @Rule
     public LoggerRule logs = new LoggerRule()
-            .recordPackage(KubernetesCloud.class, Level.FINE)
+            .recordPackage(ArmadaCloud.class, Level.FINE)
             .recordPackage(NoDelayProvisionerStrategy.class, Level.FINE)
             .record(PodUtils.class, Level.FINE)
             .record(NodeProvisioner.class, Level.FINE)

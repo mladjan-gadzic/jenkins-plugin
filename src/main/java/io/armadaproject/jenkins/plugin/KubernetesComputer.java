@@ -82,7 +82,7 @@ public class KubernetesComputer extends AbstractCloudComputer<KubernetesSlave> {
             return Collections.emptyList();
         }
 
-        KubernetesCloud cloud = slave.getKubernetesCloud();
+        ArmadaCloud cloud = slave.getKubernetesCloud();
         KubernetesClient client = cloud.connect();
 
         String namespace = StringUtils.defaultIfBlank(slave.getNamespace(), client.getNamespace());
@@ -104,7 +104,7 @@ public class KubernetesComputer extends AbstractCloudComputer<KubernetesSlave> {
 
         KubernetesSlave slave = getNode();
         if (slave != null) {
-            KubernetesCloud cloud = slave.getKubernetesCloud();
+            ArmadaCloud cloud = slave.getKubernetesCloud();
             KubernetesClient client = cloud.connect();
 
             String namespace = StringUtils.defaultIfBlank(slave.getNamespace(), client.getNamespace());
@@ -140,7 +140,7 @@ public class KubernetesComputer extends AbstractCloudComputer<KubernetesSlave> {
         ByteBuffer outputStream = new ByteBuffer();
         KubernetesSlave slave = getNode();
         if (slave != null) {
-            KubernetesCloud cloud = slave.getKubernetesCloud();
+            ArmadaCloud cloud = slave.getKubernetesCloud();
             KubernetesClient client = cloud.connect();
 
             String namespace = StringUtils.defaultIfBlank(slave.getNamespace(), client.getNamespace());

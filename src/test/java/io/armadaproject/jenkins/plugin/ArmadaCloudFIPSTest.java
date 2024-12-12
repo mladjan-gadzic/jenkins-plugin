@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Paths;
 import jenkins.security.FIPS140;
-import io.armadaproject.jenkins.plugin.KubernetesCloud;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -21,7 +20,7 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.recipes.LocalData;
 
-public class KubernetesCloudFIPSTest {
+public class ArmadaCloudFIPSTest {
 
     @ClassRule
     public static FlagRule<String> fipsFlag = FlagRule.systemProperty(FIPS140.class.getName() + ".COMPLIANCE", "true");
@@ -32,7 +31,7 @@ public class KubernetesCloudFIPSTest {
     @Test
     @Issue("JENKINS-73460")
     public void onlyFipsCompliantValuesAreAcceptedTest() throws IOException {
-        KubernetesCloud cloud = new KubernetesCloud("test-cloud");
+        ArmadaCloud cloud = new ArmadaCloud("test-cloud");
         assertThrows(IllegalArgumentException.class, () -> cloud.setSkipTlsVerify(true));
         cloud.setSkipTlsVerify(false);
         assertThrows(IllegalArgumentException.class, () -> cloud.setServerUrl("http://example.org"));
@@ -74,12 +73,12 @@ public class KubernetesCloudFIPSTest {
     @Test
     @Issue("JENKINS-73460")
     public void formValidationTest() throws IOException {
-        ExtensionList<KubernetesCloud.DescriptorImpl> descriptors =
-                ExtensionList.lookup(KubernetesCloud.DescriptorImpl.class);
-        KubernetesCloud.DescriptorImpl descriptor = descriptors.stream()
-                .filter(d -> d.getClass().isAssignableFrom(KubernetesCloud.DescriptorImpl.class))
+        ExtensionList<ArmadaCloud.DescriptorImpl> descriptors =
+                ExtensionList.lookup(ArmadaCloud.DescriptorImpl.class);
+        ArmadaCloud.DescriptorImpl descriptor = descriptors.stream()
+                .filter(d -> d.getClass().isAssignableFrom(ArmadaCloud.DescriptorImpl.class))
                 .findFirst()
-                .orElseGet(KubernetesCloud.DescriptorImpl::new);
+                .orElseGet(ArmadaCloud.DescriptorImpl::new);
         assertThat(
                 "Valid url doesn't raise error",
                 descriptor.doCheckServerUrl("https://eample.org").getMessage(),

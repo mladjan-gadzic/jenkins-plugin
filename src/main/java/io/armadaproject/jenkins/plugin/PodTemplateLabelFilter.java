@@ -13,7 +13,7 @@ import hudson.model.Node;
 public class PodTemplateLabelFilter extends PodTemplateFilter {
     @Override
     protected PodTemplate transform(
-            @NonNull KubernetesCloud cloud, @NonNull PodTemplate podTemplate, @CheckForNull Label label) {
+            @NonNull ArmadaCloud cloud, @NonNull PodTemplate podTemplate, @CheckForNull Label label) {
         if ((label == null && podTemplate.getNodeUsageMode() == Node.Mode.NORMAL)
                 || (label != null && label.matches(podTemplate.getLabelSet()))) {
             return podTemplate;

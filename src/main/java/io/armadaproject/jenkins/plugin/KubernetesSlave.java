@@ -52,7 +52,6 @@ import jenkins.security.MasterToSlaveCallable;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
-import io.armadaproject.jenkins.plugin.Messages;
 import org.jenkinsci.plugins.durabletask.executors.OnceRetentionStrategy;
 import org.jenkinsci.plugins.kubernetes.auth.KubernetesAuthException;
 import org.jenkinsci.plugins.workflow.flow.FlowExecutionOwner;
@@ -156,7 +155,7 @@ public class KubernetesSlave extends AbstractCloudSlave {
      * @deprecated Use {@link Builder} instead.
      */
     @Deprecated
-    public KubernetesSlave(PodTemplate template, String nodeDescription, KubernetesCloud cloud, String labelStr)
+    public KubernetesSlave(PodTemplate template, String nodeDescription, ArmadaCloud cloud, String labelStr)
             throws Descriptor.FormException, IOException {
 
         this(template, nodeDescription, cloud.name, labelStr, new OnceRetentionStrategy(cloud.getRetentionTimeout()));
@@ -166,7 +165,7 @@ public class KubernetesSlave extends AbstractCloudSlave {
      * @deprecated Use {@link Builder} instead.
      */
     @Deprecated
-    public KubernetesSlave(PodTemplate template, String nodeDescription, KubernetesCloud cloud, Label label)
+    public KubernetesSlave(PodTemplate template, String nodeDescription, ArmadaCloud cloud, Label label)
             throws Descriptor.FormException, IOException {
         this(
                 template,
@@ -181,7 +180,7 @@ public class KubernetesSlave extends AbstractCloudSlave {
      */
     @Deprecated
     public KubernetesSlave(
-            PodTemplate template, String nodeDescription, KubernetesCloud cloud, String labelStr, RetentionStrategy rs)
+            PodTemplate template, String nodeDescription, ArmadaCloud cloud, String labelStr, RetentionStrategy rs)
             throws Descriptor.FormException, IOException {
         this(template, nodeDescription, cloud.name, labelStr, rs);
     }
@@ -246,7 +245,7 @@ public class KubernetesSlave extends AbstractCloudSlave {
             Optional<Pod> optionalPod = getPod();
             if (optionalPod.isPresent()) {
                 Optional<Container> optionalJnlp = optionalPod.get().getSpec().getContainers().stream()
-                        .filter(c -> KubernetesCloud.JNLP_NAME.equals(c.getName()))
+                        .filter(c -> ArmadaCloud.JNLP_NAME.equals(c.getName()))
                         .findFirst();
                 if (optionalJnlp.isPresent()) {
                     remoteFS = StringUtils.defaultIfBlank(
@@ -293,22 +292,22 @@ public class KubernetesSlave extends AbstractCloudSlave {
     /**
      * Returns the cloud instance which created this agent.
      * @return the cloud instance which created this agent.
-     * @throws IllegalStateException if the cloud doesn't exist anymore, or is not a {@link KubernetesCloud}.
+     * @throws IllegalStateException if the cloud doesn't exist anymore, or is not a {@link ArmadaCloud}.
      */
     @NonNull
-    public KubernetesCloud getKubernetesCloud() {
+    public ArmadaCloud getKubernetesCloud() {
         return getKubernetesCloud(getCloudName());
     }
 
-    private static KubernetesCloud getKubernetesCloud(String cloudName) {
+    private static ArmadaCloud getKubernetesCloud(String cloudName) {
         Cloud cloud = Jenkins.get().getCloud(cloudName);
-        if (cloud instanceof KubernetesCloud) {
-            return (KubernetesCloud) cloud;
+        if (cloud instanceof ArmadaCloud) {
+            return (ArmadaCloud) cloud;
         } else if (cloud == null) {
             throw new IllegalStateException("No such cloud " + cloudName);
         } else {
             throw new IllegalStateException(KubernetesSlave.class.getName() + " can be launched only by instances of "
-                    + KubernetesCloud.class.getName() + ". Cloud is "
+                    + ArmadaCloud.class.getName() + ". Cloud is "
                     + cloud.getClass().getName());
         }
     }
@@ -335,7 +334,7 @@ public class KubernetesSlave extends AbstractCloudSlave {
         return KubernetesComputerFactory.createInstance(this);
     }
 
-    public PodRetention getPodRetention(KubernetesCloud cloud) {
+    public PodRetention getPodRetention(ArmadaCloud cloud) {
         PodRetention retentionPolicy = cloud.getPodRetention();
         PodTemplate template = getTemplateOrNull();
         if (template != null) {
@@ -359,7 +358,7 @@ public class KubernetesSlave extends AbstractCloudSlave {
     protected void _terminate(TaskListener listener) throws IOException, InterruptedException {
         LOGGER.log(Level.INFO, "Terminating Kubernetes instance for agent {0}", name);
 
-        KubernetesCloud cloud;
+        ArmadaCloud cloud;
         try {
             cloud = getKubernetesCloud();
         } catch (IllegalStateException e) {
@@ -421,10 +420,10 @@ public class KubernetesSlave extends AbstractCloudSlave {
             .build());
 
         if (jobStatusResponse.getJobStatesMap().get(armadaJobId) == JobState.RUNNING) {
-            KubernetesCloud kubernetesCloud = getKubernetesCloud();
+            ArmadaCloud armadaCloud = getKubernetesCloud();
             armadaClient.cancelJob(JobCancelRequest.newBuilder()
-                    .setQueue(kubernetesCloud.getArmadaQueue())
-                    .setJobSetId(kubernetesCloud.getArmadaQueue())
+                    .setQueue(armadaCloud.getArmadaQueue())
+                    .setJobSetId(armadaCloud.getArmadaQueue())
                     .setJobId(armadaJobId)
                 .build());
 
@@ -566,7 +565,7 @@ public class KubernetesSlave extends AbstractCloudSlave {
         private String name;
         private String nodeDescription;
         private PodTemplate podTemplate;
-        private KubernetesCloud cloud;
+        private ArmadaCloud cloud;
         private String label;
         private ComputerLauncher computerLauncher;
         private RetentionStrategy retentionStrategy;
@@ -602,7 +601,7 @@ public class KubernetesSlave extends AbstractCloudSlave {
          * @param cloud The cloud that is provisioning the {@link KubernetesSlave} instance.
          * @return the current instance for method chaining
          */
-        public Builder cloud(KubernetesCloud cloud) {
+        public Builder cloud(ArmadaCloud cloud) {
             this.cloud = cloud;
             return this;
         }
@@ -635,7 +634,7 @@ public class KubernetesSlave extends AbstractCloudSlave {
         }
 
         private static RetentionStrategy determineRetentionStrategy(
-                @NonNull KubernetesCloud cloud, @NonNull PodTemplate podTemplate) {
+                @NonNull ArmadaCloud cloud, @NonNull PodTemplate podTemplate) {
             if (podTemplate.getIdleMinutes() == 0) {
                 return new OnceRetentionStrategy(cloud.getRetentionTimeout());
             } else {
@@ -669,7 +668,7 @@ public class KubernetesSlave extends AbstractCloudSlave {
                     retentionStrategy == null ? determineRetentionStrategy(cloud, podTemplate) : retentionStrategy);
         }
 
-        private ComputerLauncher decorateLauncher(@NonNull KubernetesCloud cloud, @NonNull ComputerLauncher launcher) {
+        private ComputerLauncher decorateLauncher(@NonNull ArmadaCloud cloud, @NonNull ComputerLauncher launcher) {
             if (launcher instanceof KubernetesLauncher) {
                 ((KubernetesLauncher) launcher).setWebSocket(cloud.isWebSocket());
             }

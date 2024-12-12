@@ -8,19 +8,18 @@ import io.fabric8.kubernetes.client.utils.Serialization;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.IOUtils;
-import io.armadaproject.jenkins.plugin.KubernetesCloud;
 import io.armadaproject.jenkins.plugin.pod.decorator.PodDecorator;
 import org.junit.Before;
 
 abstract class AbstractGoldenFileTest {
 
-    protected KubernetesCloud cloud;
+    protected ArmadaCloud cloud;
     protected PodDecorator decorator;
 
     @Before
     public void setUpCloud() {
         decorator = newDecorator();
-        cloud = new KubernetesCloud("test");
+        cloud = new ArmadaCloud("test");
     }
 
     protected abstract PodDecorator newDecorator();

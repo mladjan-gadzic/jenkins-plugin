@@ -44,7 +44,7 @@ import jenkins.model.Jenkins;
 import org.apache.commons.io.IOUtils;
 import io.armadaproject.jenkins.plugin.ContainerEnvVar;
 import io.armadaproject.jenkins.plugin.ContainerTemplate;
-import io.armadaproject.jenkins.plugin.KubernetesCloud;
+import io.armadaproject.jenkins.plugin.ArmadaCloud;
 import io.armadaproject.jenkins.plugin.KubernetesSlave;
 import io.armadaproject.jenkins.plugin.PodTemplate;
 import io.armadaproject.jenkins.plugin.model.KeyValueEnvVar;
@@ -73,7 +73,7 @@ public class RestartPipelineTest {
     protected static final String SECRET_KEY = "password";
     protected static final String CONTAINER_ENV_VAR_FROM_SECRET_VALUE = "container-pa55w0rd";
     protected static final String POD_ENV_VAR_FROM_SECRET_VALUE = "pod-pa55w0rd";
-    protected KubernetesCloud cloud;
+    protected ArmadaCloud cloud;
 
     @Rule
     public JenkinsSessionRule story = new JenkinsSessionRule();
@@ -86,7 +86,7 @@ public class RestartPipelineTest {
 
     @Rule
     public LoggerRule logs = new LoggerRule()
-            .record(Logger.getLogger(KubernetesCloud.class.getPackage().getName()), Level.ALL);
+            .record(Logger.getLogger(ArmadaCloud.class.getPackage().getName()), Level.ALL);
     // .record("org.jenkinsci.plugins.durabletask",
     // Level.ALL).record("org.jenkinsci.plugins.workflow.support.concurrent",
     // Level.ALL).record("org.csanchez.jenkins.plugins.kubernetes.pipeline", Level.ALL);

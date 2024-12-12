@@ -12,8 +12,6 @@ import java.security.MessageDigest;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import io.armadaproject.jenkins.plugin.KubernetesCloud;
-import io.armadaproject.jenkins.plugin.PodTemplate;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -64,10 +62,10 @@ public class PodTemplateJenkinsTest {
 
     @Test
     public void jenkinsLabels() {
-        KubernetesCloud kubernetesCloud = new KubernetesCloud("kubernetes");
-        j.jenkins.clouds.add(kubernetesCloud);
+        ArmadaCloud armadaCloud = new ArmadaCloud("kubernetes");
+        j.jenkins.clouds.add(armadaCloud);
         PodTemplate podTemplate = new PodTemplate();
-        kubernetesCloud.addTemplate(podTemplate);
+        armadaCloud.addTemplate(podTemplate);
         podTemplate.setLabel("foo bar");
 
         Set<String> labels = j.jenkins.getLabels().stream().map(Label::getName).collect(Collectors.toSet());

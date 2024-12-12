@@ -12,11 +12,11 @@ import java.util.logging.Logger;
 class LimitRegistrationResults {
     private static final Logger LOGGER = Logger.getLogger(LimitRegistrationResults.class.getName());
 
-    private final KubernetesCloud cloud;
+    private final ArmadaCloud cloud;
 
     private final List<Result> results = new ArrayList<>();
 
-    public LimitRegistrationResults(@NonNull KubernetesCloud cloud) {
+    public LimitRegistrationResults(@NonNull ArmadaCloud cloud) {
         this.cloud = cloud;
     }
 
@@ -53,7 +53,7 @@ class LimitRegistrationResults {
             this.numExecutors = numExecutors;
         }
 
-        void unregister(KubernetesCloud cloud) {
+        void unregister(ArmadaCloud cloud) {
             if (success) {
                 LOGGER.log(
                         Level.FINEST,

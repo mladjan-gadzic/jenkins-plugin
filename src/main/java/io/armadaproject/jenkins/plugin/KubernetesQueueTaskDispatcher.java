@@ -7,7 +7,6 @@ import hudson.model.Queue;
 import hudson.model.Queue.Task;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.model.queue.QueueTaskDispatcher;
-import io.armadaproject.jenkins.plugin.Messages;
 
 @Extension
 @SuppressWarnings({"rawtypes"})
@@ -27,10 +26,10 @@ public class KubernetesQueueTaskDispatcher extends QueueTaskDispatcher {
 
     public static final class KubernetesCloudNotAllowed extends CauseOfBlockage {
 
-        private final KubernetesCloud cloud;
+        private final ArmadaCloud cloud;
         private final Job job;
 
-        public KubernetesCloudNotAllowed(KubernetesCloud cloud, Job job) {
+        public KubernetesCloudNotAllowed(ArmadaCloud cloud, Job job) {
             this.cloud = cloud;
             this.job = job;
         }

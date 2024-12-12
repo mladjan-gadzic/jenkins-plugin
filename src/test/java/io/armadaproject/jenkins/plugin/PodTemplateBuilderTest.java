@@ -79,14 +79,14 @@ public class PodTemplateBuilderTest {
 
     @Rule
     public LoggerRule logs = new LoggerRule()
-            .record(Logger.getLogger(KubernetesCloud.class.getPackage().getName()), Level.ALL);
+            .record(Logger.getLogger(ArmadaCloud.class.getPackage().getName()), Level.ALL);
 
     @Rule
     public FlagRule<String> dockerPrefix = new FlagRule<>(
             () -> DEFAULT_JNLP_DOCKER_REGISTRY_PREFIX, prefix -> DEFAULT_JNLP_DOCKER_REGISTRY_PREFIX = prefix);
 
     @Spy
-    private KubernetesCloud cloud = new KubernetesCloud("test");
+    private ArmadaCloud cloud = new ArmadaCloud("test");
 
     @Mock
     private KubernetesSlave slave;
@@ -158,7 +158,7 @@ public class PodTemplateBuilderTest {
         template.setYaml(loadYamlFile("pod-jnlp-nullenv.yaml"));
         Pod pod = new PodTemplateBuilder(template, slave).build();
         Optional<Container> jnlp = pod.getSpec().getContainers().stream()
-                .filter(c -> KubernetesCloud.JNLP_NAME.equals(c.getName()))
+                .filter(c -> ArmadaCloud.JNLP_NAME.equals(c.getName()))
                 .findFirst();
         assertThat("jnlp container is present", jnlp.isPresent(), is(true));
         assertThat(jnlp.get().getEnv(), hasSize(greaterThan(0)));

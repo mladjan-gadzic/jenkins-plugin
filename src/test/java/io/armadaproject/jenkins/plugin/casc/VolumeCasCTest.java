@@ -7,7 +7,7 @@ import static org.junit.Assert.assertNotNull;
 
 import io.jenkins.plugins.casc.misc.RoundTripAbstractTest;
 import java.util.List;
-import io.armadaproject.jenkins.plugin.KubernetesCloud;
+import io.armadaproject.jenkins.plugin.ArmadaCloud;
 import io.armadaproject.jenkins.plugin.PodTemplate;
 import io.armadaproject.jenkins.plugin.volumes.ConfigMapVolume;
 import io.armadaproject.jenkins.plugin.volumes.EmptyDirVolume;
@@ -45,7 +45,7 @@ public class VolumeCasCTest extends RoundTripAbstractTest {
 
     @Override
     protected void assertConfiguredAsExpected(RestartableJenkinsRule r, String configContent) {
-        KubernetesCloud cloud = r.j.jenkins.clouds.get(KubernetesCloud.class);
+        ArmadaCloud cloud = r.j.jenkins.clouds.get(ArmadaCloud.class);
         assertNotNull(cloud);
         List<PodTemplate> templates = cloud.getTemplates();
         assertNotNull(templates);

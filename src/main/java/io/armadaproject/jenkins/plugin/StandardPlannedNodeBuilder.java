@@ -12,7 +12,7 @@ import java.util.concurrent.CompletableFuture;
 public class StandardPlannedNodeBuilder extends PlannedNodeBuilder {
     @Override
     public NodeProvisioner.PlannedNode build() {
-        KubernetesCloud cloud = getCloud();
+        ArmadaCloud cloud = getCloud();
         PodTemplate t = getTemplate();
         CompletableFuture f;
         String displayName;

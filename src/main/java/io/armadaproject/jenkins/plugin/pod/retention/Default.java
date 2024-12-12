@@ -6,8 +6,7 @@ import hudson.model.DescriptorVisibilityFilter;
 import io.fabric8.kubernetes.api.model.Pod;
 import java.io.Serializable;
 import java.util.function.Supplier;
-import io.armadaproject.jenkins.plugin.KubernetesCloud;
-import io.armadaproject.jenkins.plugin.pod.retention.Messages;
+import io.armadaproject.jenkins.plugin.ArmadaCloud;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -19,7 +18,7 @@ public class Default extends PodRetention implements Serializable {
     public Default() {}
 
     @Override
-    public boolean shouldDeletePod(KubernetesCloud cloud, Supplier<Pod> pod) {
+    public boolean shouldDeletePod(ArmadaCloud cloud, Supplier<Pod> pod) {
         PodRetention parent = cloud.getPodRetention();
         if (!(parent instanceof Default)) {
             return parent.shouldDeletePod(cloud, pod);
@@ -57,7 +56,7 @@ public class Default extends PodRetention implements Serializable {
         @Override
         @SuppressWarnings("rawtypes")
         public boolean filter(Object context, Descriptor descriptor) {
-            if (context instanceof KubernetesCloud.DescriptorImpl && descriptor instanceof DescriptorImpl) {
+            if (context instanceof ArmadaCloud.DescriptorImpl && descriptor instanceof DescriptorImpl) {
                 return false;
             }
             return true;

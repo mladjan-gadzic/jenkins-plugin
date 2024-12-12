@@ -58,10 +58,9 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.apache.commons.lang.RandomStringUtils;
 import io.armadaproject.jenkins.plugin.KubernetesClientProvider;
-import io.armadaproject.jenkins.plugin.KubernetesCloud;
+import io.armadaproject.jenkins.plugin.ArmadaCloud;
 import io.armadaproject.jenkins.plugin.KubernetesSlave;
 import io.armadaproject.jenkins.plugin.PodTemplate;
-import io.armadaproject.jenkins.plugin.pipeline.KubernetesNodeContext;
 import org.jenkinsci.plugins.workflow.steps.StepContext;
 import org.junit.After;
 import org.junit.Before;
@@ -81,7 +80,7 @@ public class ContainerExecDecoratorWindowsTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
-    private KubernetesCloud cloud;
+    private ArmadaCloud cloud;
     private static KubernetesClient client;
     private static final Pattern PID_PATTERN = Pattern.compile("^((?:\\[\\d+\\] )?pid is \\d+)$", Pattern.MULTILINE);
 

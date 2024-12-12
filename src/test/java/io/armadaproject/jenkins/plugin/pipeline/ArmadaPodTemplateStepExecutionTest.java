@@ -28,7 +28,7 @@ import static io.armadaproject.jenkins.plugin.KubernetesTestUtil.*;
 import static org.junit.Assert.*;
 
 import hudson.model.Result;
-import io.armadaproject.jenkins.plugin.KubernetesCloud;
+import io.armadaproject.jenkins.plugin.ArmadaCloud;
 import io.armadaproject.jenkins.plugin.KubernetesTestUtil;
 import io.armadaproject.jenkins.plugin.Messages;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
@@ -40,16 +40,16 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
-public class PodTemplateStepExecutionTest {
+public class ArmadaPodTemplateStepExecutionTest {
 
     @Rule
     public JenkinsRule r = new JenkinsRule();
 
-    protected KubernetesCloud cloud;
+    protected ArmadaCloud cloud;
 
     @Before
     public void configureCloud() throws Exception {
-        cloud = new KubernetesCloud("kubernetes");
+        cloud = new ArmadaCloud("kubernetes");
         r.jenkins.clouds.add(cloud);
     }
 

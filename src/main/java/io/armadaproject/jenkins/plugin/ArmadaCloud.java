@@ -71,7 +71,6 @@ import jenkins.util.SystemProperties;
 import jenkins.websocket.WebSockets;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
-import io.armadaproject.jenkins.plugin.Messages;
 import io.armadaproject.jenkins.plugin.pipeline.PodTemplateMap;
 import org.jenkinsci.plugins.kubernetes.auth.KubernetesAuth;
 import org.jenkinsci.plugins.kubernetes.auth.KubernetesAuthException;
@@ -97,11 +96,11 @@ import org.kohsuke.stapler.verb.POST;
  *
  * @author Carlos Sanchez carlos@apache.org
  */
-public class KubernetesCloud extends Cloud implements PodTemplateGroup {
+public class ArmadaCloud extends Cloud implements PodTemplateGroup {
     public static final int DEFAULT_MAX_REQUESTS_PER_HOST = 32;
     public static final Integer DEFAULT_WAIT_FOR_POD_SEC = 600;
 
-    private static final Logger LOGGER = Logger.getLogger(KubernetesCloud.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ArmadaCloud.class.getName());
 
     public static final String JNLP_NAME = "jnlp";
     /** label for all pods started by the plugin */
@@ -173,7 +172,7 @@ public class KubernetesCloud extends Cloud implements PodTemplateGroup {
     private GarbageCollection garbageCollection;
 
     @DataBoundConstructor
-    public KubernetesCloud(String name) {
+    public ArmadaCloud(String name) {
         super(name);
         setMaxRequestsPerHost(DEFAULT_MAX_REQUESTS_PER_HOST);
     }
@@ -191,17 +190,17 @@ public class KubernetesCloud extends Cloud implements PodTemplateGroup {
             justification = "Problem raised for calling unmarshal. Ignoring the "
                     + "warning cause it leads to too many changes, with "
                     + "unclear impact.")
-    public KubernetesCloud(@NonNull String name, @NonNull KubernetesCloud source) {
+    public ArmadaCloud(@NonNull String name, @NonNull ArmadaCloud source) {
         super(name);
         XStream2 xs = new XStream2();
         xs.omitField(Cloud.class, "name");
-        xs.omitField(KubernetesCloud.class, "templates"); // TODO PodTemplate and fields needs to implement equals
+        xs.omitField(ArmadaCloud.class, "templates"); // TODO PodTemplate and fields needs to implement equals
         xs.unmarshal(XStream2.getDefaultDriver().createReader(new StringReader(xs.toXML(source))), this);
         this.templates.addAll(source.templates);
     }
 
     @Deprecated
-    public KubernetesCloud(
+    public ArmadaCloud(
             String name,
             List<? extends PodTemplate> templates,
             String serverUrl,
@@ -894,7 +893,7 @@ public class KubernetesCloud extends Cloud implements PodTemplateGroup {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        KubernetesCloud that = (KubernetesCloud) o;
+        ArmadaCloud that = (ArmadaCloud) o;
         return Objects.equals(name, that.name)
                 && skipTlsVerify == that.skipTlsVerify
                 && addMasterProxyEnvVars == that.addMasterProxyEnvVars
@@ -1006,7 +1005,7 @@ public class KubernetesCloud extends Cloud implements PodTemplateGroup {
     public static class DescriptorImpl extends Descriptor<Cloud> {
         @Override
         public String getDisplayName() {
-            return "Kubernetes";
+            return "Armada";
         }
 
         @Initializer(before = InitMilestone.PLUGINS_STARTED)
@@ -1431,7 +1430,7 @@ public class KubernetesCloud extends Cloud implements PodTemplateGroup {
     @Override
     public Cloud reconfigure(@NonNull StaplerRequest req, JSONObject form) throws Descriptor.FormException {
         // cloud configuration doesn't contain templates anymore, so just keep existing ones.
-        var newInstance = (KubernetesCloud) super.reconfigure(req, form);
+        var newInstance = (ArmadaCloud) super.reconfigure(req, form);
         newInstance.setTemplates(this.templates);
         return newInstance;
     }
@@ -1440,7 +1439,7 @@ public class KubernetesCloud extends Cloud implements PodTemplateGroup {
     public static class PodTemplateSourceImpl extends PodTemplateSource {
         @NonNull
         @Override
-        public List<PodTemplate> getList(@NonNull KubernetesCloud cloud) {
+        public List<PodTemplate> getList(@NonNull ArmadaCloud cloud) {
             return cloud.getTemplates();
         }
     }
@@ -1451,8 +1450,8 @@ public class KubernetesCloud extends Cloud implements PodTemplateGroup {
             Jenkins jenkins = Jenkins.get();
             String hostAddress = System.getProperty("jenkins.host.address");
             if (hostAddress != null
-                    && jenkins.clouds.getAll(KubernetesCloud.class).isEmpty()) {
-                KubernetesCloud cloud = new KubernetesCloud("kubernetes");
+                    && jenkins.clouds.getAll(ArmadaCloud.class).isEmpty()) {
+                ArmadaCloud cloud = new ArmadaCloud("kubernetes");
                 cloud.setJenkinsUrl(
                         "http://" + hostAddress + ":" + SystemProperties.getInteger("port", 8080) + "/jenkins/");
                 jenkins.clouds.add(cloud);

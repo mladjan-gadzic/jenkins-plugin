@@ -102,7 +102,7 @@ public class KubernetesFactoryAdapter {
                 skipTlsVerify,
                 connectTimeout,
                 readTimeout,
-                KubernetesCloud.DEFAULT_MAX_REQUESTS_PER_HOST,
+                ArmadaCloud.DEFAULT_MAX_REQUESTS_PER_HOST,
                 false);
     }
 

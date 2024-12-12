@@ -29,8 +29,6 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import io.armadaproject.jenkins.plugin.KubernetesCloud;
-import io.armadaproject.jenkins.plugin.PodTemplate;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsSessionRule;
@@ -47,7 +45,7 @@ public class KubernetesRestartTest {
         AtomicReference<String> podTemplateId = new AtomicReference<>();
         AtomicReference<String> toString = new AtomicReference<>();
         s.then(r -> {
-            KubernetesCloud cloud = r.jenkins.clouds.get(KubernetesCloud.class);
+            ArmadaCloud cloud = r.jenkins.clouds.get(ArmadaCloud.class);
             List<PodTemplate> templates = cloud.getTemplates();
             assertThat(templates, hasSize(1));
             PodTemplate podTemplate = templates.get(0);
@@ -55,7 +53,7 @@ public class KubernetesRestartTest {
             toString.set(podTemplate.toString());
         });
         s.then(r -> {
-            KubernetesCloud cloud = r.jenkins.clouds.get(KubernetesCloud.class);
+            ArmadaCloud cloud = r.jenkins.clouds.get(ArmadaCloud.class);
             List<PodTemplate> templates = cloud.getTemplates();
             assertThat(templates, hasSize(1));
             PodTemplate podTemplate = templates.get(0);

@@ -8,13 +8,13 @@
     <relativePath />
   </parent>
 
-  <groupId>org.csanchez.jenkins.plugins</groupId>
-  <artifactId>kubernetes</artifactId>
+  <groupId>io.armadaproject</groupId>
+  <artifactId>jenkins-plugin</artifactId>
   <version>${changelist}</version>
   <packaging>hpi</packaging>
-  <name>Kubernetes plugin</name>
+  <name>Armada plugin</name>
   <description>Jenkins plugin to run dynamic agents in a Kubernetes cluster</description>
-  <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
+  <url>https://github.com/armadaproject/${artifactId}</url>
 
   <licenses>
     <license>
@@ -48,8 +48,7 @@
     <bom.version>3387.v0f2773fa_3200</bom.version>
     <no-test-jar>false</no-test-jar>
     <useBeta>true</useBeta>
-    <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
-
+    <gitHubRepo>armadaproject/${artifactId}</gitHubRepo>
     <java-client.version>0.0.4</java-client.version>
   </properties>
 

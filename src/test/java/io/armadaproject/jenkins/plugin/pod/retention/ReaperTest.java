@@ -50,12 +50,10 @@ import java.util.stream.Collectors;
 import jenkins.model.Jenkins;
 import okhttp3.mockwebserver.RecordedRequest;
 import io.armadaproject.jenkins.plugin.KubernetesClientProvider;
-import io.armadaproject.jenkins.plugin.KubernetesCloud;
+import io.armadaproject.jenkins.plugin.ArmadaCloud;
 import io.armadaproject.jenkins.plugin.KubernetesComputer;
 import io.armadaproject.jenkins.plugin.KubernetesSlave;
 import io.armadaproject.jenkins.plugin.PodTemplate;
-import io.armadaproject.jenkins.plugin.pod.retention.PodOfflineCause;
-import io.armadaproject.jenkins.plugin.pod.retention.Reaper;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
@@ -82,7 +80,7 @@ public class ReaperTest {
 
     @Test
     public void testMaybeActivate() throws IOException, InterruptedException {
-        KubernetesCloud cloud = addCloud("k8s", "foo");
+        ArmadaCloud cloud = addCloud("k8s", "foo");
         String watchPodsPath = "/api/v1/namespaces/foo/pods?allowWatchBookmarks=true&watch=true";
         server.expect()
                 .withPath(watchPodsPath)
@@ -126,7 +124,7 @@ public class ReaperTest {
 
     @Test
     public void testWatchFailOnActivate() throws IOException, InterruptedException {
-        KubernetesCloud cloud = addCloud("k8s", "foo");
+        ArmadaCloud cloud = addCloud("k8s", "foo");
         // activate reaper
         Reaper r = Reaper.getInstance();
         r.maybeActivate();
@@ -151,7 +149,7 @@ public class ReaperTest {
         Reaper r = Reaper.getInstance();
 
         // add new cloud
-        KubernetesCloud cloud = addCloud("k8s", "foo");
+        ArmadaCloud cloud = addCloud("k8s", "foo");
         KubernetesSlave n2 = addNode(cloud, "p1-123", "p1");
         TaskListener tl = mock(TaskListener.class);
         KubernetesComputer kc = new KubernetesComputer(n2);
@@ -170,7 +168,7 @@ public class ReaperTest {
 
     @Test(timeout = 10_000)
     public void testReconnectOnNewComputer() throws InterruptedException, IOException {
-        KubernetesCloud cloud = addCloud("k8s", "foo");
+        ArmadaCloud cloud = addCloud("k8s", "foo");
         String watchPodsPath = "/api/v1/namespaces/foo/pods?allowWatchBookmarks=true&watch=true";
         server.expect()
                 .withPath(watchPodsPath)
@@ -238,7 +236,7 @@ public class ReaperTest {
         String cloudName = "k8s";
         assertFalse("should not be watching cloud", r.isWatchingCloud(cloudName));
 
-        KubernetesCloud cloud = addCloud(cloudName, "foo");
+        ArmadaCloud cloud = addCloud(cloudName, "foo");
 
         // invalidate client
         j.jenkins.clouds.add(cloud);
@@ -250,7 +248,7 @@ public class ReaperTest {
 
     @Test(timeout = 10_000)
     public void testRemoveWatchWhenCloudRemoved() throws InterruptedException, IOException {
-        KubernetesCloud cloud = addCloud("k8s", "foo");
+        ArmadaCloud cloud = addCloud("k8s", "foo");
         String watchPodsPath = "/api/v1/namespaces/foo/pods?allowWatchBookmarks=true&watch=true";
         server.expect()
                 .withPath(watchPodsPath)
@@ -277,7 +275,7 @@ public class ReaperTest {
 
     @Test(timeout = 10_000)
     public void testReplaceWatchWhenCloudUpdated() throws InterruptedException, IOException {
-        KubernetesCloud cloud = addCloud("k8s", "foo");
+        ArmadaCloud cloud = addCloud("k8s", "foo");
         Pod node123 = new PodBuilder()
                 .withNewStatus()
                 .endStatus()
@@ -332,7 +330,7 @@ public class ReaperTest {
 
     @Test(timeout = 10_000)
     public void testStopWatchingOnCloseException() throws InterruptedException {
-        KubernetesCloud cloud = addCloud("k8s", "foo");
+        ArmadaCloud cloud = addCloud("k8s", "foo");
         String watchPodsPath = "/api/v1/namespaces/foo/pods?allowWatchBookmarks=true&watch=true";
         server.expect()
                 .withPath(watchPodsPath)
@@ -365,7 +363,7 @@ public class ReaperTest {
 
     @Test(timeout = 10_000)
     public void testKeepWatchingOnKubernetesApiServerError() throws InterruptedException {
-        KubernetesCloud cloud = addCloud("k8s", "foo");
+        ArmadaCloud cloud = addCloud("k8s", "foo");
         String watchPodsPath = "/api/v1/namespaces/foo/pods?allowWatchBookmarks=true&watch=true";
         server.expect()
                 .withPath(watchPodsPath)
@@ -406,7 +404,7 @@ public class ReaperTest {
 
     @Test(timeout = 10_000)
     public void testKeepWatchingOnStatusWatchEvent() throws InterruptedException {
-        KubernetesCloud cloud = addCloud("k8s", "foo");
+        ArmadaCloud cloud = addCloud("k8s", "foo");
         String watchPodsPath = "/api/v1/namespaces/foo/pods?allowWatchBookmarks=true&watch=true";
         server.expect().withPath(watchPodsPath).andReturnChunked(200).once();
         Status status = new Status();
@@ -447,9 +445,9 @@ public class ReaperTest {
                 .always();
 
         // add more clouds to make sure they are all closed
-        KubernetesCloud cloud = addCloud("k8s", "foo");
-        KubernetesCloud cloud2 = addCloud("c2", "foo");
-        KubernetesCloud cloud3 = addCloud("c3", "foo");
+        ArmadaCloud cloud = addCloud("k8s", "foo");
+        ArmadaCloud cloud2 = addCloud("c2", "foo");
+        ArmadaCloud cloud3 = addCloud("c3", "foo");
 
         // activate reaper
         Reaper r = Reaper.getInstance();
@@ -467,7 +465,7 @@ public class ReaperTest {
 
     @Test(timeout = 10_000)
     public void testDeleteNodeOnPodDelete() throws IOException, InterruptedException {
-        KubernetesCloud cloud = addCloud("k8s", "foo");
+        ArmadaCloud cloud = addCloud("k8s", "foo");
         KubernetesSlave node = addNode(cloud, "node-123", "node");
         Pod node123 = createPod(node);
 
@@ -510,7 +508,7 @@ public class ReaperTest {
 
     @Test(timeout = 10_000)
     public void testTerminateAgentOnContainerTerminated() throws IOException, InterruptedException {
-        KubernetesCloud cloud = addCloud("k8s", "foo");
+        ArmadaCloud cloud = addCloud("k8s", "foo");
         KubernetesSlave node = addNode(cloud, "node-123", "node");
         Pod node123 = withContainerStatusTerminated(createPod(node));
 
@@ -567,7 +565,7 @@ public class ReaperTest {
     @Test(timeout = 10_000)
     public void testTerminateAgentOnPodFailed() throws IOException, InterruptedException {
         System.out.println(server.getKubernetesMockServer().getPort());
-        KubernetesCloud cloud = addCloud("k8s", "foo");
+        ArmadaCloud cloud = addCloud("k8s", "foo");
         KubernetesSlave node = addNode(cloud, "node-123", "node");
         Pod node123 = createPod(node);
         node123.getStatus().setPhase("Failed");
@@ -608,7 +606,7 @@ public class ReaperTest {
 
     @Test(timeout = 10_000)
     public void testTerminateAgentOnImagePullBackoff() throws IOException, InterruptedException {
-        KubernetesCloud cloud = addCloud("k8s", "foo");
+        ArmadaCloud cloud = addCloud("k8s", "foo");
         KubernetesSlave node = addNode(cloud, "node-123", "node");
         Pod node123 = withContainerImagePullBackoff(createPod(node));
         Reaper.TerminateAgentOnImagePullBackOff.BACKOFF_EVENTS_LIMIT = 2;
@@ -700,7 +698,7 @@ public class ReaperTest {
                 .build();
     }
 
-    private KubernetesSlave addNode(KubernetesCloud cld, String podName, String nodeName) throws IOException {
+    private KubernetesSlave addNode(ArmadaCloud cld, String podName, String nodeName) throws IOException {
         KubernetesSlave node = mock(KubernetesSlave.class);
         when(node.getNodeName()).thenReturn(nodeName);
         when(node.getNamespace()).thenReturn(cld.getNamespace());
@@ -719,8 +717,8 @@ public class ReaperTest {
         return node;
     }
 
-    private KubernetesCloud addCloud(String name, String namespace) {
-        KubernetesCloud c = new KubernetesCloud(name);
+    private ArmadaCloud addCloud(String name, String namespace) {
+        ArmadaCloud c = new ArmadaCloud(name);
         c.setServerUrl(server.getClient().getMasterUrl().toString());
         c.setNamespace(namespace);
         c.setSkipTlsVerify(true);
@@ -901,14 +899,14 @@ public class ReaperTest {
                 .build();
     }
 
-    private static void assertShouldBeWatching(Reaper r, KubernetesCloud... clouds) {
-        for (KubernetesCloud cloud : clouds) {
+    private static void assertShouldBeWatching(Reaper r, ArmadaCloud... clouds) {
+        for (ArmadaCloud cloud : clouds) {
             await("should be watching cloud " + cloud.name).until(() -> r.isWatchingCloud(cloud.name));
         }
     }
 
-    private static void assertShouldNotBeWatching(Reaper r, KubernetesCloud... clouds) {
-        for (KubernetesCloud cloud : clouds) {
+    private static void assertShouldNotBeWatching(Reaper r, ArmadaCloud... clouds) {
+        for (ArmadaCloud cloud : clouds) {
             await("should not be watching cloud " + cloud.name).until(() -> !r.isWatchingCloud(cloud.name));
         }
     }

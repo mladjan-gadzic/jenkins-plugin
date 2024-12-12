@@ -49,7 +49,7 @@ public class KubernetesClientProvider {
 
     private KubernetesClientProvider() {}
 
-    static KubernetesClient createClient(KubernetesCloud cloud) throws KubernetesAuthException, IOException {
+    static KubernetesClient createClient(ArmadaCloud cloud) throws KubernetesAuthException, IOException {
         String displayName = cloud.getDisplayName();
         final Client c = clients.getIfPresent(displayName);
         if (c == null) {
@@ -78,7 +78,7 @@ public class KubernetesClientProvider {
      * @return client validity hash code
      */
     @Restricted(NoExternalUse.class)
-    public static int getValidity(@NonNull KubernetesCloud cloud) {
+    public static int getValidity(@NonNull ArmadaCloud cloud) {
         Object[] cloudObjects = {
             cloud.getServerUrl(),
             cloud.getNamespace(),
@@ -129,7 +129,7 @@ public class KubernetesClientProvider {
             if (o instanceof Jenkins) {
                 Jenkins jenkins = (Jenkins) o;
                 Set<String> cloudDisplayNames = new HashSet<>(clients.asMap().keySet());
-                for (KubernetesCloud cloud : jenkins.clouds.getAll(KubernetesCloud.class)) {
+                for (ArmadaCloud cloud : jenkins.clouds.getAll(ArmadaCloud.class)) {
                     String displayName = cloud.getDisplayName();
                     Client client = clients.getIfPresent(displayName);
                     if (client == null || client.getValidity() == getValidity(cloud)) {

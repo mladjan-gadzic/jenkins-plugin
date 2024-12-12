@@ -14,12 +14,6 @@ import hudson.slaves.RetentionStrategy;
 import java.util.ArrayList;
 import java.util.Calendar;
 import net.sf.json.JSONObject;
-import io.armadaproject.jenkins.plugin.KubernetesCloud;
-import io.armadaproject.jenkins.plugin.KubernetesFolderProperty;
-import io.armadaproject.jenkins.plugin.KubernetesLauncher;
-import io.armadaproject.jenkins.plugin.KubernetesQueueTaskDispatcher;
-import io.armadaproject.jenkins.plugin.KubernetesSlave;
-import io.armadaproject.jenkins.plugin.PodTemplate;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.support.steps.ExecutorStepExecution;
 import org.junit.Rule;
@@ -51,10 +45,10 @@ public class KubernetesQueueTaskDispatcherTest {
         jenkins.jenkins.add(folderA, "Folder A");
         jenkins.jenkins.add(folderB, "Folder B");
 
-        KubernetesCloud cloudA = new KubernetesCloud("A");
+        ArmadaCloud cloudA = new ArmadaCloud("A");
         cloudA.setUsageRestricted(true);
 
-        KubernetesCloud cloudB = new KubernetesCloud("B");
+        ArmadaCloud cloudB = new ArmadaCloud("B");
         cloudB.setUsageRestricted(true);
 
         jenkins.jenkins.clouds.add(cloudA);
@@ -105,7 +99,7 @@ public class KubernetesQueueTaskDispatcherTest {
         Folder folder = new Folder(jenkins.jenkins, "C");
         FreeStyleProject project = folder.createProject(FreeStyleProject.class, "buildJob");
         jenkins.jenkins.add(folder, "C");
-        KubernetesCloud cloud = new KubernetesCloud("C");
+        ArmadaCloud cloud = new ArmadaCloud("C");
         cloud.setUsageRestricted(false);
         jenkins.jenkins.clouds.add(cloud);
         KubernetesQueueTaskDispatcher dispatcher = new KubernetesQueueTaskDispatcher();

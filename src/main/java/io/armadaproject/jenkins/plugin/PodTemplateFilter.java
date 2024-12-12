@@ -29,7 +29,7 @@ public abstract class PodTemplateFilter implements ExtensionPoint {
      * @return The pod template list after filtering
      */
     public static List<PodTemplate> applyAll(
-            @NonNull KubernetesCloud cloud, @NonNull List<PodTemplate> podTemplates, @CheckForNull Label label) {
+            @NonNull ArmadaCloud cloud, @NonNull List<PodTemplate> podTemplates, @CheckForNull Label label) {
         List<PodTemplate> result = new ArrayList<>();
         for (PodTemplate t : podTemplates) {
             PodTemplate output = t;
@@ -49,12 +49,12 @@ public abstract class PodTemplateFilter implements ExtensionPoint {
     /**
      * Transforms a pod template definition.
      *
-     * @param cloud The {@link KubernetesCloud} instance the {@link PodTemplate} instances will be scheduled into.
+     * @param cloud The {@link ArmadaCloud} instance the {@link PodTemplate} instances will be scheduled into.
      * @param podTemplate The input pod template to process.
      * @param label The label that was requested for provisioning
      * @return A new pod template after transformation. It can be null if the filter denies access to the given pod template.
      */
     @CheckForNull
     protected abstract PodTemplate transform(
-            @NonNull KubernetesCloud cloud, @NonNull PodTemplate podTemplate, @CheckForNull Label label);
+            @NonNull ArmadaCloud cloud, @NonNull PodTemplate podTemplate, @CheckForNull Label label);
 }

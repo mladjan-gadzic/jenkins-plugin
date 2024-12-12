@@ -25,7 +25,7 @@
 package io.armadaproject.jenkins.plugin;
 
 import static io.armadaproject.jenkins.plugin.ContainerTemplate.DEFAULT_WORKING_DIR;
-import static io.armadaproject.jenkins.plugin.KubernetesCloud.JNLP_NAME;
+import static io.armadaproject.jenkins.plugin.ArmadaCloud.JNLP_NAME;
 import static io.armadaproject.jenkins.plugin.PodTemplateUtils.combine;
 import static io.armadaproject.jenkins.plugin.PodTemplateUtils.isNullOrEmpty;
 import static io.armadaproject.jenkins.plugin.PodTemplateUtils.sanitizeLabel;
@@ -153,7 +153,7 @@ public class PodTemplateBuilder {
     private KubernetesSlave agent;
 
     @CheckForNull
-    private KubernetesCloud cloud;
+    private ArmadaCloud cloud;
 
     @Deprecated
     public PodTemplateBuilder(PodTemplate template) {
@@ -440,7 +440,7 @@ public class PodTemplateBuilder {
     private Map<String, EnvVar> defaultEnvVars(Collection<TemplateEnvVar> globalEnvVars) {
         Map<String, String> env = new HashMap<>();
         if (agent != null) {
-            KubernetesCloud cloud = agent.getKubernetesCloud();
+            ArmadaCloud cloud = agent.getKubernetesCloud();
             if (cloud.isAddMasterProxyEnvVars()) {
                 // see if the env vars for proxy that the remoting.jar looks for
                 // are set on the controller, and if so, propagate them to the agent
@@ -489,7 +489,7 @@ public class PodTemplateBuilder {
 
             env.put("JENKINS_AGENT_WORKDIR", workingDir);
 
-            KubernetesCloud cloud = agent.getKubernetesCloud();
+            ArmadaCloud cloud = agent.getKubernetesCloud();
 
             if (!StringUtils.isBlank(cloud.getJenkinsTunnel())) {
                 env.put("JENKINS_TUNNEL", cloud.getJenkinsTunnel());

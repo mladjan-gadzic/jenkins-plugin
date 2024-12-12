@@ -4,7 +4,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import io.fabric8.kubernetes.api.model.Pod;
 import org.apache.commons.lang.StringUtils;
-import io.armadaproject.jenkins.plugin.KubernetesCloud;
+import io.armadaproject.jenkins.plugin.ArmadaCloud;
 
 /**
  * Sets the restart policy to Never.
@@ -13,7 +13,7 @@ import io.armadaproject.jenkins.plugin.KubernetesCloud;
 public class DefaultRestartPolicy implements PodDecorator {
     @NonNull
     @Override
-    public Pod decorate(@NonNull KubernetesCloud kubernetesCloud, @NonNull Pod pod) {
+    public Pod decorate(@NonNull ArmadaCloud armadaCloud, @NonNull Pod pod) {
         if (StringUtils.isBlank(pod.getSpec().getRestartPolicy())) {
             pod.getSpec().setRestartPolicy("Never");
         }

@@ -12,7 +12,7 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.slaves.Cloud;
 import io.armadaproject.jenkins.plugin.ContainerTemplate;
-import io.armadaproject.jenkins.plugin.KubernetesCloud;
+import io.armadaproject.jenkins.plugin.ArmadaCloud;
 import io.armadaproject.jenkins.plugin.KubernetesFolderProperty;
 import io.armadaproject.jenkins.plugin.PodAnnotation;
 import io.armadaproject.jenkins.plugin.PodImagePullSecret;
@@ -48,13 +48,13 @@ public class PodTemplateStepExecution extends AbstractStepExecutionImpl {
             Boolean.parseBoolean(System.getProperty(PodTemplateStepExecution.class.getName() + ".verbose"));
 
     @SuppressFBWarnings(value = "SE_TRANSIENT_FIELD_NOT_RESTORED", justification = "not needed on deserialization")
-    private final transient PodTemplateStep step;
+    private final transient ArmadaPodTemplateStep step;
 
     private final String cloudName;
 
     private PodTemplate newTemplate = null;
 
-    PodTemplateStepExecution(PodTemplateStep step, StepContext context) {
+    PodTemplateStepExecution(ArmadaPodTemplateStep step, StepContext context) {
         super(context);
         this.step = step;
         this.cloudName = step.getCloud();
@@ -62,7 +62,7 @@ public class PodTemplateStepExecution extends AbstractStepExecutionImpl {
 
     @Override
     public boolean start() throws Exception {
-        KubernetesCloud cloud = resolveCloud(cloudName);
+        ArmadaCloud cloud = resolveCloud(cloudName);
 
         Run<?, ?> run = getContext().get(Run.class);
         if (cloud.isUsageRestricted()) {
@@ -179,10 +179,10 @@ public class PodTemplateStepExecution extends AbstractStepExecutionImpl {
     }
 
     @NonNull
-    private static KubernetesCloud resolveCloud(final String cloudName) throws AbortException {
-        KubernetesCloud cloud;
+    private static ArmadaCloud resolveCloud(final String cloudName) throws AbortException {
+        ArmadaCloud cloud;
         if (cloudName == null) {
-            cloud = Jenkins.get().clouds.get(KubernetesCloud.class);
+            cloud = Jenkins.get().clouds.get(ArmadaCloud.class);
             if (cloud == null) {
                 throw new AbortException("No Kubernetes cloud was found.");
             }
@@ -191,12 +191,12 @@ public class PodTemplateStepExecution extends AbstractStepExecutionImpl {
             if (cl == null) {
                 throw new AbortException(String.format("Cloud does not exist: %s", cloudName));
             }
-            if (!(cl instanceof KubernetesCloud)) {
+            if (!(cl instanceof ArmadaCloud)) {
                 throw new AbortException(String.format(
                         "Cloud is not a Kubernetes cloud: %s (%s)",
                         cloudName, cl.getClass().getName()));
             }
-            cloud = (KubernetesCloud) cl;
+            cloud = (ArmadaCloud) cl;
         }
         return cloud;
     }
@@ -205,31 +205,31 @@ public class PodTemplateStepExecution extends AbstractStepExecutionImpl {
      * Check if the current Job is permitted to use the cloud.
      *
      * @param run
-     * @param kubernetesCloud
+     * @param armadaCloud
      * @throws AbortException
      *             in case the Job has not been authorized to use the
      *             kubernetesCloud
      */
-    private void checkAccess(Run<?, ?> run, KubernetesCloud kubernetesCloud) throws AbortException {
+    private void checkAccess(Run<?, ?> run, ArmadaCloud armadaCloud) throws AbortException {
         Job<?, ?> job = run.getParent(); // Return the associated Job for this Build
         ItemGroup<?> parent = job.getParent(); // Get the Parent of the Job (which might be a Folder)
 
         Set<String> allowedClouds = new HashSet<>();
         KubernetesFolderProperty.collectAllowedClouds(allowedClouds, parent);
-        if (!allowedClouds.contains(kubernetesCloud.name)) {
+        if (!allowedClouds.contains(armadaCloud.name)) {
             throw new AbortException(String.format("Not authorized to use Kubernetes cloud: %s", step.getCloud()));
         }
     }
 
     private String checkNamespace(
-            KubernetesCloud kubernetesCloud, @CheckForNull PodTemplateContext podTemplateContext) {
+            ArmadaCloud armadaCloud, @CheckForNull PodTemplateContext podTemplateContext) {
         String namespace = null;
         if (!PodTemplateUtils.isNullOrEmpty(step.getNamespace())) {
             namespace = step.getNamespace();
         } else if (podTemplateContext != null && !PodTemplateUtils.isNullOrEmpty(podTemplateContext.getNamespace())) {
             namespace = podTemplateContext.getNamespace();
         } else {
-            namespace = kubernetesCloud.getNamespace();
+            namespace = armadaCloud.getNamespace();
         }
         return namespace;
     }
@@ -240,7 +240,7 @@ public class PodTemplateStepExecution extends AbstractStepExecutionImpl {
     @Override
     public void onResume() {
         try {
-            KubernetesCloud cloud = resolveCloud(cloudName);
+            ArmadaCloud cloud = resolveCloud(cloudName);
             TaskListener listener = getContext().get(TaskListener.class);
             newTemplate.setListener(listener);
             newTemplate.setRun(getContext().get(Run.class));
@@ -276,7 +276,7 @@ public class PodTemplateStepExecution extends AbstractStepExecutionImpl {
          */
         protected void finished(StepContext context) throws Exception {
             try {
-                KubernetesCloud cloud = resolveCloud(cloudName);
+                ArmadaCloud cloud = resolveCloud(cloudName);
                 LOGGER.log(
                         Level.FINE,
                         () -> "Removing pod template " + podTemplate.getName() + " from cloud " + cloud.name);

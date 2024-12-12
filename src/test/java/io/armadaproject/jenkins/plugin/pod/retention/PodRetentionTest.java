@@ -6,24 +6,19 @@ import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodStatus;
 import io.fabric8.kubernetes.api.model.PodStatusBuilder;
 import java.util.function.Supplier;
-import io.armadaproject.jenkins.plugin.KubernetesCloud;
-import io.armadaproject.jenkins.plugin.pod.retention.Always;
-import io.armadaproject.jenkins.plugin.pod.retention.Default;
-import io.armadaproject.jenkins.plugin.pod.retention.Never;
-import io.armadaproject.jenkins.plugin.pod.retention.OnFailure;
-import io.armadaproject.jenkins.plugin.pod.retention.PodRetention;
+import io.armadaproject.jenkins.plugin.ArmadaCloud;
 import org.junit.Before;
 import org.junit.Test;
 
 public class PodRetentionTest {
 
-    private KubernetesCloud cloud;
+    private ArmadaCloud cloud;
     private Pod pod;
     private Supplier<Pod> podS = () -> pod;
 
     @Before
     public void setUp() {
-        this.cloud = new KubernetesCloud("kubernetes");
+        this.cloud = new ArmadaCloud("kubernetes");
         this.pod = new Pod();
     }
 

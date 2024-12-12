@@ -19,11 +19,6 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
-import io.armadaproject.jenkins.plugin.ContainerTemplate;
-import io.armadaproject.jenkins.plugin.KubernetesCloud;
-import io.armadaproject.jenkins.plugin.PodLabel;
-import io.armadaproject.jenkins.plugin.PodTemplate;
-import io.armadaproject.jenkins.plugin.PodTemplateUtils;
 import io.armadaproject.jenkins.plugin.pod.retention.Always;
 import io.armadaproject.jenkins.plugin.pod.retention.PodRetention;
 import io.armadaproject.jenkins.plugin.volumes.EmptyDirVolume;
@@ -42,14 +37,14 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.recipes.LocalData;
 
-public class KubernetesCloudTest {
+public class ArmadaCloudTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
     @Rule
     public LoggerRule logs = new LoggerRule()
-            .record(Logger.getLogger(KubernetesCloud.class.getPackage().getName()), Level.ALL);
+            .record(Logger.getLogger(ArmadaCloud.class.getPackage().getName()), Level.ALL);
 
     @After
     public void tearDown() {
@@ -58,7 +53,7 @@ public class KubernetesCloudTest {
 
     @Test
     public void configRoundTrip() throws Exception {
-        var cloud = new KubernetesCloud("kubernetes");
+        var cloud = new ArmadaCloud("kubernetes");
         var podTemplate = new PodTemplate();
         podTemplate.setName("test-template");
         podTemplate.setLabel("test");
@@ -67,7 +62,7 @@ public class KubernetesCloudTest {
         jenkins.clouds.add(cloud);
         jenkins.save();
         j.submit(j.createWebClient().goTo("cloud/kubernetes/configure").getFormByName("config"));
-        assertEquals(cloud, jenkins.clouds.get(KubernetesCloud.class));
+        assertEquals(cloud, jenkins.clouds.get(ArmadaCloud.class));
     }
 
     @Test
@@ -95,7 +90,7 @@ public class KubernetesCloudTest {
     @Test(expected = IllegalStateException.class)
     public void getJenkinsUrlOrDie_NoJenkinsUrl() {
         JenkinsLocationConfiguration.get().setUrl(null);
-        KubernetesCloud cloud = new KubernetesCloud("name");
+        ArmadaCloud cloud = new ArmadaCloud("name");
         String url = cloud.getJenkinsUrlOrDie();
         fail("Should have thrown IllegalStateException at this point but got " + url + " instead.");
     }
@@ -103,7 +98,7 @@ public class KubernetesCloudTest {
     @Test
     public void getJenkinsUrlOrDie_UrlInCloud() {
         System.setProperty("KUBERNETES_JENKINS_URL", "http://mylocationinsysprop");
-        KubernetesCloud cloud = new KubernetesCloud("name");
+        ArmadaCloud cloud = new ArmadaCloud("name");
         cloud.setJenkinsUrl("http://mylocation");
         assertEquals("http://mylocation/", cloud.getJenkinsUrlOrDie());
     }
@@ -111,21 +106,21 @@ public class KubernetesCloudTest {
     @Test
     public void getJenkinsUrlOrDie_UrlInSysprop() {
         System.setProperty("KUBERNETES_JENKINS_URL", "http://mylocation");
-        KubernetesCloud cloud = new KubernetesCloud("name");
+        ArmadaCloud cloud = new ArmadaCloud("name");
         assertEquals("http://mylocation/", cloud.getJenkinsUrlOrDie());
     }
 
     @Test
     public void getJenkinsUrlOrDie_UrlInLocation() {
         JenkinsLocationConfiguration.get().setUrl("http://mylocation");
-        KubernetesCloud cloud = new KubernetesCloud("name");
+        ArmadaCloud cloud = new ArmadaCloud("name");
         assertEquals("http://mylocation/", cloud.getJenkinsUrlOrDie());
     }
 
     @Test
     public void getJenkinsUrlOrNull_NoJenkinsUrl() {
         JenkinsLocationConfiguration.get().setUrl(null);
-        KubernetesCloud cloud = new KubernetesCloud("name");
+        ArmadaCloud cloud = new ArmadaCloud("name");
         String url = cloud.getJenkinsUrlOrNull();
         assertNull(url);
     }
@@ -133,7 +128,7 @@ public class KubernetesCloudTest {
     @Test
     public void getJenkinsUrlOrNull_UrlInCloud() {
         System.setProperty("KUBERNETES_JENKINS_URL", "http://mylocationinsysprop");
-        KubernetesCloud cloud = new KubernetesCloud("name");
+        ArmadaCloud cloud = new ArmadaCloud("name");
         cloud.setJenkinsUrl("http://mylocation");
         assertEquals("http://mylocation/", cloud.getJenkinsUrlOrNull());
     }
@@ -141,28 +136,28 @@ public class KubernetesCloudTest {
     @Test
     public void getJenkinsUrlOrNull_UrlInSysprop() {
         System.setProperty("KUBERNETES_JENKINS_URL", "http://mylocation");
-        KubernetesCloud cloud = new KubernetesCloud("name");
+        ArmadaCloud cloud = new ArmadaCloud("name");
         assertEquals("http://mylocation/", cloud.getJenkinsUrlOrNull());
     }
 
     @Test
     public void getJenkinsUrlOrNull_UrlInLocation() {
         JenkinsLocationConfiguration.get().setUrl("http://mylocation");
-        KubernetesCloud cloud = new KubernetesCloud("name");
+        ArmadaCloud cloud = new ArmadaCloud("name");
         assertEquals("http://mylocation/", cloud.getJenkinsUrlOrNull());
     }
 
     @Test
     public void testKubernetesCloudDefaults() {
-        KubernetesCloud cloud = new KubernetesCloud("name");
+        ArmadaCloud cloud = new ArmadaCloud("name");
         assertEquals(PodRetention.getKubernetesCloudDefault(), cloud.getPodRetention());
     }
 
     @Test
     public void testPodLabels() {
-        List<PodLabel> defaultPodLabelsList = PodLabel.fromMap(KubernetesCloud.DEFAULT_POD_LABELS);
-        KubernetesCloud cloud = new KubernetesCloud("name");
-        assertEquals(KubernetesCloud.DEFAULT_POD_LABELS, cloud.getPodLabelsMap());
+        List<PodLabel> defaultPodLabelsList = PodLabel.fromMap(ArmadaCloud.DEFAULT_POD_LABELS);
+        ArmadaCloud cloud = new ArmadaCloud("name");
+        assertEquals(ArmadaCloud.DEFAULT_POD_LABELS, cloud.getPodLabelsMap());
         assertEquals(defaultPodLabelsList, cloud.getPodLabels());
         assertEquals(cloud.getPodLabelsMap(), cloud.getLabels());
 
@@ -176,18 +171,18 @@ public class KubernetesCloudTest {
         assertEquals(new ArrayList<>(labels), cloud.getPodLabels());
 
         cloud.setPodLabels(null);
-        assertEquals(KubernetesCloud.DEFAULT_POD_LABELS, cloud.getPodLabelsMap());
+        assertEquals(ArmadaCloud.DEFAULT_POD_LABELS, cloud.getPodLabelsMap());
         assertEquals(defaultPodLabelsList, cloud.getPodLabels());
 
         cloud.setPodLabels(new ArrayList<>());
-        assertEquals(KubernetesCloud.DEFAULT_POD_LABELS, cloud.getPodLabelsMap());
+        assertEquals(ArmadaCloud.DEFAULT_POD_LABELS, cloud.getPodLabelsMap());
         assertEquals(cloud.getPodLabelsMap(), cloud.getLabels());
         assertEquals(defaultPodLabelsList, cloud.getPodLabels());
     }
 
     @Test
     public void testLabels() {
-        KubernetesCloud cloud = new KubernetesCloud("name");
+        ArmadaCloud cloud = new ArmadaCloud("name");
 
         List<PodLabel> labels = PodLabel.listOf("foo", "bar", "cat", "dog");
         cloud.setPodLabels(labels);
@@ -213,7 +208,7 @@ public class KubernetesCloudTest {
         PodTemplate pt = new PodTemplate();
         pt.setName("podTemplate");
 
-        KubernetesCloud cloud = new KubernetesCloud("name");
+        ArmadaCloud cloud = new ArmadaCloud("name");
         var objectProperties =
                 Set.of("templates", "podRetention", "podLabels", "labels", "serverCertificate", "garbageCollection");
         for (String property : PropertyUtils.describe(cloud).keySet()) {
@@ -244,16 +239,16 @@ public class KubernetesCloudTest {
         cloud.setPodLabels(PodLabel.listOf("foo", "bar", "cat", "dog"));
         cloud.setLabels(Collections.singletonMap("foo", "bar"));
 
-        KubernetesCloud copy = new KubernetesCloud("copy", cloud);
+        ArmadaCloud copy = new ArmadaCloud("copy", cloud);
         assertEquals("copy", copy.name);
         assertTrue(
                 "Expected cloud from copy constructor to be equal to the source except for name",
-                EqualsBuilder.reflectionEquals(cloud, copy, true, KubernetesCloud.class, "name"));
+                EqualsBuilder.reflectionEquals(cloud, copy, true, ArmadaCloud.class, "name"));
     }
 
     @Test
     public void defaultWorkspaceVolume() throws Exception {
-        KubernetesCloud cloud = new KubernetesCloud("kubernetes");
+        ArmadaCloud cloud = new ArmadaCloud("kubernetes");
         j.jenkins.clouds.add(cloud);
         j.jenkins.save();
         JenkinsRule.WebClient wc = j.createWebClient();
@@ -262,7 +257,7 @@ public class KubernetesCloudTest {
         HtmlInput templateName = getInputByName(f, "_.name");
         templateName.setValue("default-workspace-volume");
         j.submit(f);
-        cloud = j.jenkins.clouds.get(KubernetesCloud.class);
+        cloud = j.jenkins.clouds.get(ArmadaCloud.class);
         PodTemplate podTemplate = cloud.getTemplates().get(0);
         assertEquals("default-workspace-volume", podTemplate.getName());
         assertEquals(WorkspaceVolume.getDefault(), podTemplate.getWorkspaceVolume());
@@ -281,27 +276,27 @@ public class KubernetesCloudTest {
 
     @Test
     public void minRetentionTimeout() {
-        KubernetesCloud cloud = new KubernetesCloud("kubernetes");
-        assertEquals(KubernetesCloud.DEFAULT_RETENTION_TIMEOUT_MINUTES, cloud.getRetentionTimeout());
+        ArmadaCloud cloud = new ArmadaCloud("kubernetes");
+        assertEquals(ArmadaCloud.DEFAULT_RETENTION_TIMEOUT_MINUTES, cloud.getRetentionTimeout());
         cloud.setRetentionTimeout(0);
-        assertEquals(KubernetesCloud.DEFAULT_RETENTION_TIMEOUT_MINUTES, cloud.getRetentionTimeout());
+        assertEquals(ArmadaCloud.DEFAULT_RETENTION_TIMEOUT_MINUTES, cloud.getRetentionTimeout());
     }
 
     @Test
     @LocalData
     public void emptyKubernetesCloudReadResolve() {
-        KubernetesCloud cloud = j.jenkins.clouds.get(KubernetesCloud.class);
-        assertEquals(KubernetesCloud.DEFAULT_RETENTION_TIMEOUT_MINUTES, cloud.getRetentionTimeout());
+        ArmadaCloud cloud = j.jenkins.clouds.get(ArmadaCloud.class);
+        assertEquals(ArmadaCloud.DEFAULT_RETENTION_TIMEOUT_MINUTES, cloud.getRetentionTimeout());
         assertEquals(Integer.MAX_VALUE, cloud.getContainerCap());
-        assertEquals(KubernetesCloud.DEFAULT_MAX_REQUESTS_PER_HOST, cloud.getMaxRequestsPerHost());
+        assertEquals(ArmadaCloud.DEFAULT_MAX_REQUESTS_PER_HOST, cloud.getMaxRequestsPerHost());
         assertEquals(PodRetention.getKubernetesCloudDefault(), cloud.getPodRetention());
-        assertEquals(KubernetesCloud.DEFAULT_WAIT_FOR_POD_SEC, cloud.getWaitForPodSec());
+        assertEquals(ArmadaCloud.DEFAULT_WAIT_FOR_POD_SEC, cloud.getWaitForPodSec());
     }
 
     @Test
     @LocalData
     public void readResolveContainerCapZero() {
-        KubernetesCloud cloud = j.jenkins.clouds.get(KubernetesCloud.class);
+        ArmadaCloud cloud = j.jenkins.clouds.get(ArmadaCloud.class);
         assertEquals(cloud.getContainerCap(), Integer.MAX_VALUE);
     }
 

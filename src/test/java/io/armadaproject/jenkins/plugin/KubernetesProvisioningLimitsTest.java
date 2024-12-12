@@ -11,9 +11,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-import io.armadaproject.jenkins.plugin.KubernetesCloud;
-import io.armadaproject.jenkins.plugin.KubernetesProvisioningLimits;
-import io.armadaproject.jenkins.plugin.PodTemplate;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -31,7 +28,7 @@ public class KubernetesProvisioningLimitsTest {
     public void lotsOfCloudsAndTemplates() throws InterruptedException {
         ThreadLocalRandom testRandom = ThreadLocalRandom.current();
         for (int i = 1; i < 4; i++) {
-            KubernetesCloud cloud = new KubernetesCloud("kubernetes-" + i);
+            ArmadaCloud cloud = new ArmadaCloud("kubernetes-" + i);
             cloud.setContainerCap(testRandom.nextInt(4) + 1);
             for (int j = 1; j < 4; j++) {
                 PodTemplate pt = new PodTemplate();
@@ -47,12 +44,12 @@ public class KubernetesProvisioningLimitsTest {
         CompletionService<Void> ecs = new ExecutorCompletionService<>(threadPool);
         KubernetesProvisioningLimits kubernetesProvisioningLimits = KubernetesProvisioningLimits.get();
 
-        List<KubernetesCloud> clouds = j.jenkins.clouds.getAll(KubernetesCloud.class);
+        List<ArmadaCloud> clouds = j.jenkins.clouds.getAll(ArmadaCloud.class);
         for (int k = 0; k < 1000; k++) {
             ecs.submit(
                     () -> {
                         ThreadLocalRandom random = ThreadLocalRandom.current();
-                        KubernetesCloud cloud = clouds.get(random.nextInt(clouds.size()));
+                        ArmadaCloud cloud = clouds.get(random.nextInt(clouds.size()));
                         List<PodTemplate> templates = cloud.getTemplates();
                         PodTemplate podTemplate = templates.get(random.nextInt(templates.size()));
                         while (!kubernetesProvisioningLimits.register(cloud, podTemplate, 1)) {
@@ -87,7 +84,7 @@ public class KubernetesProvisioningLimitsTest {
         assertEquals(0, threadPool.shutdownNow().size());
 
         // Check that every count is back to 0
-        for (KubernetesCloud cloud : j.jenkins.clouds.getAll(KubernetesCloud.class)) {
+        for (ArmadaCloud cloud : j.jenkins.clouds.getAll(ArmadaCloud.class)) {
             assertEquals(0, KubernetesProvisioningLimits.get().getGlobalCount(cloud.name));
             for (PodTemplate template : cloud.getTemplates()) {
                 assertEquals(0, KubernetesProvisioningLimits.get().getPodTemplateCount(template.getId()));

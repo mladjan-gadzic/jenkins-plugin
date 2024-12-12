@@ -74,7 +74,7 @@ public final class KubernetesProvisioningLimits {
      * @param numExecutors the number of executors (pretty much always 1)
      */
     public synchronized boolean register(
-            @NonNull KubernetesCloud cloud, @NonNull PodTemplate podTemplate, int numExecutors) {
+            @NonNull ArmadaCloud cloud, @NonNull PodTemplate podTemplate, int numExecutors) {
         initInstance();
         int newGlobalCount = getGlobalCount(cloud.name) + numExecutors;
         if (newGlobalCount <= cloud.getContainerCap()) {
@@ -116,7 +116,7 @@ public final class KubernetesProvisioningLimits {
      * @param numExecutors the number of executors (pretty much always 1)
      */
     public synchronized void unregister(
-            @NonNull KubernetesCloud cloud, @NonNull PodTemplate podTemplate, int numExecutors) {
+            @NonNull ArmadaCloud cloud, @NonNull PodTemplate podTemplate, int numExecutors) {
         if (initInstance()) {
             int newGlobalCount = getGlobalCount(cloud.name) - numExecutors;
             if (newGlobalCount < 0) {

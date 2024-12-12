@@ -85,7 +85,7 @@ public class KubernetesSlaveTest {
                     createPodRetentionTestCase(new Always(), new Always(), new Always()),
                     createPodRetentionTestCase(new Always(), new OnFailure(), new OnFailure()),
                     createPodRetentionTestCase(new Always(), new Never(), new Never()));
-            KubernetesCloud cloud = new KubernetesCloud("test");
+            ArmadaCloud cloud = new ArmadaCloud("test");
             r.jenkins.clouds.add(cloud);
             for (KubernetesSlaveTestCase<PodRetention> testCase : cases) {
                 cloud.setPodRetention(testCase.getCloudPodRetention());
@@ -113,7 +113,7 @@ public class KubernetesSlaveTest {
         private String podPhase;
         private T expectedResult;
 
-        public KubernetesSlave buildSubject(KubernetesCloud cloud) throws IOException, Descriptor.FormException {
+        public KubernetesSlave buildSubject(ArmadaCloud cloud) throws IOException, Descriptor.FormException {
             return new KubernetesSlave.Builder()
                     .cloud(cloud)
                     .podTemplate(podTemplate)

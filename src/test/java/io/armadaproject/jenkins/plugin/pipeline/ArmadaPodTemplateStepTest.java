@@ -1,6 +1,5 @@
 package io.armadaproject.jenkins.plugin.pipeline;
 
-import io.armadaproject.jenkins.plugin.pipeline.PodTemplateStep;
 import io.armadaproject.jenkins.plugin.pod.retention.OnFailure;
 import io.armadaproject.jenkins.plugin.pod.retention.PodRetention;
 import io.armadaproject.jenkins.plugin.volumes.workspace.DynamicPVCWorkspaceVolume;
@@ -11,7 +10,7 @@ import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
-public class PodTemplateStepTest {
+public class ArmadaPodTemplateStepTest {
     @Rule
     public JenkinsRule rule = new JenkinsRule();
 
@@ -19,7 +18,7 @@ public class PodTemplateStepTest {
     @Test
     public void configRoundTrip() throws Exception {
         SnippetizerTester st = new SnippetizerTester(rule);
-        PodTemplateStep step = new PodTemplateStep();
+        ArmadaPodTemplateStep step = new ArmadaPodTemplateStep();
 
         st.assertRoundTrip(step, "podTemplate {\n    // some block\n}");
         step.setName("podTest");

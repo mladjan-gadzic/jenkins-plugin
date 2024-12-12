@@ -21,15 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.csanchez.jenkins.plugins.kubernetes.pipeline
+package io.armadaproject.jenkins.plugin.pipeline
 
-import io.armadaproject.jenkins.plugin.pipeline.KubernetesDeclarativeAgent
 import org.jenkinsci.plugins.pipeline.modeldefinition.agent.CheckoutScript
 import org.jenkinsci.plugins.pipeline.modeldefinition.agent.DeclarativeAgentScript
 import org.jenkinsci.plugins.workflow.cps.CpsScript
 
-public class KubernetesDeclarativeAgentScript extends DeclarativeAgentScript<KubernetesDeclarativeAgent> {
-    public KubernetesDeclarativeAgentScript(CpsScript s, KubernetesDeclarativeAgent a) {
+public class ArmadaDeclarativeAgentScript extends DeclarativeAgentScript<ArmadaDeclarativeAgent> {
+    public ArmadaDeclarativeAgentScript(CpsScript s, ArmadaDeclarativeAgent a) {
         super(s, a)
     }
 
@@ -49,7 +48,7 @@ public class KubernetesDeclarativeAgentScript extends DeclarativeAgentScript<Kub
             if (describable.containerTemplate != null) {
                 script.echo '[WARNING] containerTemplate option is deprecated, use yaml syntax to define containers.'
             }
-            script.podTemplate(describable.asArgs) {
+            script.steps.'io.armadaproject.jenkins.plugin.pipeline.ArmadaPodTemplateStep'(describable.asArgs) {
                 Closure run = {
                     script.node(describable.labelExpression ?: script.POD_LABEL) {
                         CheckoutScript.doCheckout(script, describable, describable.customWorkspace) {

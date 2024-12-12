@@ -21,7 +21,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.apache.commons.lang.StringUtils;
-import io.armadaproject.jenkins.plugin.pipeline.Messages;
 import io.armadaproject.jenkins.plugin.volumes.workspace.WorkspaceVolume;
 import org.jenkinsci.Symbol;
 import org.jenkinsci.plugins.pipeline.modeldefinition.agent.DeclarativeAgentDescriptor;
@@ -36,9 +35,9 @@ import org.kohsuke.stapler.QueryParameter;
 @SuppressFBWarnings(
         value = "SE_NO_SERIALVERSIONID",
         justification = "Serialization happens exclusively through XStream and not Java Serialization.")
-public class KubernetesDeclarativeAgent extends RetryableDeclarativeAgent<KubernetesDeclarativeAgent> {
+public class ArmadaDeclarativeAgent extends RetryableDeclarativeAgent<ArmadaDeclarativeAgent> {
 
-    private static final Logger LOGGER = Logger.getLogger(KubernetesDeclarativeAgent.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ArmadaDeclarativeAgent.class.getName());
 
     @CheckForNull
     private String label;
@@ -109,10 +108,10 @@ public class KubernetesDeclarativeAgent extends RetryableDeclarativeAgent<Kubern
     private boolean agentInjection;
 
     @DataBoundConstructor
-    public KubernetesDeclarativeAgent() {}
+    public ArmadaDeclarativeAgent() {}
 
     @Deprecated
-    public KubernetesDeclarativeAgent(String label, ContainerTemplate containerTemplate) {
+    public ArmadaDeclarativeAgent(String label, ContainerTemplate containerTemplate) {
         this.label = label;
         this.containerTemplate = containerTemplate;
     }
@@ -166,7 +165,7 @@ public class KubernetesDeclarativeAgent extends RetryableDeclarativeAgent<Kubern
 
     @DataBoundSetter
     public void setInheritFrom(String inheritFrom) {
-        if (PodTemplateStep.DescriptorImpl.defaultInheritFrom.equals(inheritFrom)) {
+        if (ArmadaPodTemplateStep.DescriptorImpl.defaultInheritFrom.equals(inheritFrom)) {
             this.inheritFrom = null;
         } else {
             this.inheritFrom = inheritFrom;
@@ -289,13 +288,13 @@ public class KubernetesDeclarativeAgent extends RetryableDeclarativeAgent<Kubern
     }
 
     public PodRetention getPodRetention() {
-        return this.podRetention == null ? PodTemplateStep.DescriptorImpl.defaultPodRetention : this.podRetention;
+        return this.podRetention == null ? ArmadaPodTemplateStep.DescriptorImpl.defaultPodRetention : this.podRetention;
     }
 
     @DataBoundSetter
     public void setPodRetention(@CheckForNull PodRetention podRetention) {
         this.podRetention =
-                (podRetention == null || podRetention.equals(PodTemplateStep.DescriptorImpl.defaultPodRetention))
+                (podRetention == null || podRetention.equals(ArmadaPodTemplateStep.DescriptorImpl.defaultPodRetention))
                         ? null
                         : podRetention;
     }
@@ -337,13 +336,13 @@ public class KubernetesDeclarativeAgent extends RetryableDeclarativeAgent<Kubern
     }
 
     public WorkspaceVolume getWorkspaceVolume() {
-        return workspaceVolume == null ? PodTemplateStep.DescriptorImpl.defaultWorkspaceVolume : this.workspaceVolume;
+        return workspaceVolume == null ? ArmadaPodTemplateStep.DescriptorImpl.defaultWorkspaceVolume : this.workspaceVolume;
     }
 
     @DataBoundSetter
     public void setWorkspaceVolume(WorkspaceVolume workspaceVolume) {
         this.workspaceVolume = (workspaceVolume == null
-                        || workspaceVolume.equals(PodTemplateStep.DescriptorImpl.defaultWorkspaceVolume))
+                        || workspaceVolume.equals(ArmadaPodTemplateStep.DescriptorImpl.defaultWorkspaceVolume))
                 ? null
                 : workspaceVolume;
     }
@@ -460,8 +459,8 @@ public class KubernetesDeclarativeAgent extends RetryableDeclarativeAgent<Kubern
     }
 
     @OptionalExtension(requirePlugins = "pipeline-model-extensions")
-    @Symbol("kubernetes")
-    public static class DescriptorImpl extends DeclarativeAgentDescriptor<KubernetesDeclarativeAgent> {
+    @Symbol("armada")
+    public static class DescriptorImpl extends DeclarativeAgentDescriptor<ArmadaDeclarativeAgent> {
 
         static final String[] POD_TEMPLATE_FIELDS = {
             "namespace",
@@ -483,7 +482,7 @@ public class KubernetesDeclarativeAgent extends RetryableDeclarativeAgent<Kubern
 
         public DescriptorImpl() {
             for (String field : new String[] {"cloud", "label"}) {
-                addHelpFileRedirect(field, PodTemplateStep.class, field);
+                addHelpFileRedirect(field, ArmadaPodTemplateStep.class, field);
             }
             for (String field : POD_TEMPLATE_FIELDS) {
                 addHelpFileRedirect(field, PodTemplate.class, field);
@@ -498,13 +497,13 @@ public class KubernetesDeclarativeAgent extends RetryableDeclarativeAgent<Kubern
 
         @SuppressWarnings("unused") // by stapler/jelly
         public ListBoxModel doFillCloudItems() {
-            return ExtensionList.lookupSingleton(PodTemplateStep.DescriptorImpl.class)
+            return ExtensionList.lookupSingleton(ArmadaPodTemplateStep.DescriptorImpl.class)
                     .doFillCloudItems();
         }
 
         @SuppressWarnings("unused") // by stapler/jelly
         public ListBoxModel doFillInheritFromItems(@QueryParameter("cloud") String cloudName) {
-            return ExtensionList.lookupSingleton(PodTemplateStep.DescriptorImpl.class)
+            return ExtensionList.lookupSingleton(ArmadaPodTemplateStep.DescriptorImpl.class)
                     .doFillInheritFromItems(cloudName);
         }
 

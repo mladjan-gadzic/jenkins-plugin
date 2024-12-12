@@ -22,9 +22,9 @@ import io.armadaproject.jenkins.plugin.pipeline.steps.RunId;
 import io.armadaproject.jenkins.plugin.pipeline.steps.SetupCloud;
 import org.junit.Test;
 
-public final class KubernetesDeclarativeAgentRJRTest extends AbstractKubernetesPipelineRJRTest {
+public final class ArmadaDeclarativeAgentRJRTest extends AbstractKubernetesPipelineRJRTest {
 
-    public KubernetesDeclarativeAgentRJRTest() throws UnknownHostException {
+    public ArmadaDeclarativeAgentRJRTest() throws UnknownHostException {
         super(new SetupCloud());
     }
 

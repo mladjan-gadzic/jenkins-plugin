@@ -4,7 +4,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import io.fabric8.kubernetes.api.model.Pod;
 import java.util.Collections;
-import io.armadaproject.jenkins.plugin.KubernetesCloud;
+import io.armadaproject.jenkins.plugin.ArmadaCloud;
 
 /**
  * Sets the default node selector to linux if it hasn't been set explicitly in the pod before.
@@ -13,7 +13,7 @@ import io.armadaproject.jenkins.plugin.KubernetesCloud;
 public class DefaultNodeSelector implements PodDecorator {
     @NonNull
     @Override
-    public Pod decorate(@NonNull KubernetesCloud kubernetesCloud, @NonNull Pod pod) {
+    public Pod decorate(@NonNull ArmadaCloud armadaCloud, @NonNull Pod pod) {
         // default OS: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
         if (pod.getSpec().getRuntimeClassName() == null
                 && (pod.getSpec().getNodeSelector() == null

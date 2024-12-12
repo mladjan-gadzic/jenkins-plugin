@@ -1,11 +1,10 @@
 package io.armadaproject.jenkins.plugin.pod.retention;
 
 import hudson.Extension;
-import io.armadaproject.jenkins.plugin.KubernetesCloud;
+import io.armadaproject.jenkins.plugin.ArmadaCloud;
 import io.fabric8.kubernetes.api.model.Pod;
 import java.io.Serializable;
 import java.util.function.Supplier;
-import io.armadaproject.jenkins.plugin.pod.retention.Messages;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -17,7 +16,7 @@ public class Never extends PodRetention implements Serializable {
     public Never() {}
 
     @Override
-    public boolean shouldDeletePod(KubernetesCloud cloud, Supplier<Pod> pod) {
+    public boolean shouldDeletePod(ArmadaCloud cloud, Supplier<Pod> pod) {
         return true;
     }
 

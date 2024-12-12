@@ -48,9 +48,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import io.armadaproject.jenkins.plugin.ContainerTemplate;
-import io.armadaproject.jenkins.plugin.KubernetesCloud;
-import io.armadaproject.jenkins.plugin.PodTemplate;
 import io.armadaproject.jenkins.plugin.model.KeyValueEnvVar;
 import io.armadaproject.jenkins.plugin.pod.retention.Default;
 import io.armadaproject.jenkins.plugin.pod.retention.Never;
@@ -79,11 +76,11 @@ public class KubernetesTest {
     @Rule
     public LoggerRule log = new LoggerRule();
 
-    private KubernetesCloud cloud;
+    private ArmadaCloud cloud;
 
     @Before
     public void before() throws Exception {
-        cloud = r.jenkins.clouds.get(KubernetesCloud.class);
+        cloud = r.jenkins.clouds.get(ArmadaCloud.class);
         assertNotNull(cloud);
     }
 
