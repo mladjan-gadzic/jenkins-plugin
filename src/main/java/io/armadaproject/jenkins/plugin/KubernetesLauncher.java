@@ -126,7 +126,7 @@ public class KubernetesLauncher extends JNLPLauncher {
 
         String cloudName = node.getCloudName();
 
-        try {
+        try(ArmadaClient armadaClient = node.getKubernetesCloud().connectToArmada()) {
             PodTemplate template = node.getTemplate();
             KubernetesCloud cloud = node.getKubernetesCloud();
             ArmadaClient armadaClient = cloud.connectToArmada();

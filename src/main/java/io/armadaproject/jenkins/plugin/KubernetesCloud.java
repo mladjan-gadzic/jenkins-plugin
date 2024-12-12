@@ -1074,7 +1074,8 @@ public class KubernetesCloud extends Cloud implements PodTemplateGroup {
         @SuppressWarnings("unused") // used by jelly
         @SuppressFBWarnings("REC_CATCH_EXCEPTION")
         public FormValidation doTestArmadaConnection(@QueryParameter String armadaUrl,
-            @QueryParameter String armadaPort, @QueryParameter String armadaCredentialsId) {
+            @QueryParameter String armadaPort, @QueryParameter String armadaCredentialsId)
+            throws Exception {
             Jenkins.get().checkPermission(Jenkins.MANAGE);
 
             if (StringUtils.isBlank(armadaUrl)) {
@@ -1084,8 +1085,8 @@ public class KubernetesCloud extends Cloud implements PodTemplateGroup {
                 return FormValidation.error("armadaPort is required");
             }
 
+            ArmadaClient armadaClient = null;
             try {
-                ArmadaClient armadaClient;
                 if (StringUtils.isBlank(armadaCredentialsId)) {
                     armadaClient = new ArmadaClient(armadaUrl, Integer.parseInt(armadaPort));
                 } else {
@@ -1127,6 +1128,9 @@ public class KubernetesCloud extends Cloud implements PodTemplateGroup {
                 return FormValidation.error(
                     "Error testing Armada connection url:%s, port:%s, cause:%s", armadaUrl,
                     armadaPort, e.getCause().toString());
+            } finally {
+              assert armadaClient != null;
+              armadaClient.close();
             }
         }
 
