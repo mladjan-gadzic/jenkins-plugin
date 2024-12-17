@@ -50,6 +50,18 @@
     <useBeta>true</useBeta>
     <gitHubRepo>armadaproject/${artifactId}</gitHubRepo>
     <java-client.version>0.0.4</java-client.version>
+
+    <io.grpc.version>1.67.1</io.grpc.version>
+    <protobuf-java.version>3.25.3</protobuf-java.version>
+    <os-maven-plugin.version>1.7.1</os-maven-plugin.version>
+    <maven-checkstyle-plugin.version>3.5.0</maven-checkstyle-plugin.version>
+    <checkstyle.version>10.18.2</checkstyle.version>
+    <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
+    <protobuf-maven-plugin.version>0.6.1</protobuf-maven-plugin.version>
+    <annotation-api.version>6.0.53</annotation-api.version>
+    <exec-maven-plugin.version>3.0.0</exec-maven-plugin.version>
+    <org.junit.jupiter.version>5.11.1</org.junit.jupiter.version>
+    <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
   </properties>
 
   <dependencyManagement>
@@ -262,17 +274,75 @@
       <version>1.1.1</version>
       <scope>test</scope>
     </dependency>
+
     <dependency>
-      <groupId>io.armadaproject</groupId>
-      <artifactId>java-client</artifactId>
-      <version>${java-client.version}</version>
-      <!-- necessary because of enforcer plugin -->
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-netty-shaded</artifactId>
+      <version>${io.grpc.version}</version>
+      <scope>runtime</scope>
       <exclusions>
         <exclusion>
           <groupId>com.google.errorprone</groupId>
           <artifactId>error_prone_annotations</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-protobuf</artifactId>
+      <version>${io.grpc.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.errorprone</groupId>
+          <artifactId>error_prone_annotations</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-stub</artifactId>
+      <version>${io.grpc.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.errorprone</groupId>
+          <artifactId>error_prone_annotations</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java</artifactId>
+      <version>${protobuf-java.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.errorprone</groupId>
+          <artifactId>error_prone_annotations</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <!-- needed for javax.annotation.Generated -->
+    <dependency>
+      <groupId>org.apache.tomcat</groupId>
+      <artifactId>annotations-api</artifactId>
+      <version>${annotation-api.version}</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>${org.junit.jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>${org.junit.jupiter.version}</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
