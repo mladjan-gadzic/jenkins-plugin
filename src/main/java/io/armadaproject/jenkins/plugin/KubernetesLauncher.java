@@ -223,13 +223,14 @@ public class KubernetesLauncher extends JNLPLauncher {
                     }
                     throw e;
                 }
-                LOGGER.log(INFO, () -> "Submitted job: " + kubernetesComputer.getArmadaJobId());
-                listener.getLogger().printf("Submitted job: %s %n",
-                    kubernetesComputer.getArmadaJobId());
+                String armadaLookoutJobUrl = cloud.getArmadaLookoutUrl() + ":"
+                    + cloud.getArmadaLookoutPort() + "/?sb=" + kubernetesComputer.getArmadaJobId();
+                LOGGER.log(INFO, () -> "Submitted job: " + armadaLookoutJobUrl);
+                listener.getLogger().printf("Submitted job: %s %n", armadaLookoutJobUrl);
                 Metrics.metricRegistry().counter(MetricNames.PODS_CREATED).inc();
 
                 node.getRunListener().getLogger().printf("Submitted job: %s %n",
-                    kubernetesComputer.getArmadaJobId());
+                    armadaLookoutJobUrl);
             } else {
                 LOGGER.log(INFO, () -> "Job already exists: " +
                     kubernetesComputer.getArmadaJobId());
