@@ -11,6 +11,7 @@ import com.cloudbees.plugins.credentials.common.StandardCredentials;
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.Descriptor;
+import hudson.model.Label;
 import hudson.model.Node;
 import hudson.security.ACL;
 import hudson.slaves.Cloud;
@@ -293,10 +294,11 @@ public class ArmadaCloud extends Cloud {
    */
   @Override
   public boolean canProvision(CloudState state) {
-    String label = state.getLabel() != null ? state.getLabel().toString() : null;
-    if (label == null) {
+    Label stateLabel = state.getLabel();
+    if (stateLabel == null) {
       return false;
     }
+    String label = stateLabel.toString();
     // Check if we have a dynamic template for this label
     return dynamicTemplates.containsKey(label);
   }
@@ -306,11 +308,12 @@ public class ArmadaCloud extends Cloud {
     // Validate configuration before attempting to provision
     validateConfiguration();
 
-    String label = state.getLabel() != null ? state.getLabel().toString() : null;
-    if (label == null) {
+    Label stateLabel = state.getLabel();
+    if (stateLabel == null) {
       LOGGER.log(Level.WARNING, "No label provided for provisioning");
       return new ArrayList<>();
     }
+    String label = stateLabel.toString();
 
     // Look up the dynamic template for this label
     ArmadaJobTemplate template = dynamicTemplates.get(label);
